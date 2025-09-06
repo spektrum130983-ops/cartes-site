@@ -8,7 +8,7 @@ body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
 h1 { text-align: center; margin-bottom: 20px; }
 
 #controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-#controls input, #controls select { padding: 5px; font-size: 1em; }
+#controls select { padding: 5px; font-size: 1em; }
 
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 
@@ -60,26 +60,50 @@ h1 { text-align: center; margin-bottom: 20px; }
 <h1>Ma Collection de Cartes</h1>
 
 <div id="controls">
-  <input type="text" id="filterSerie" placeholder="Filtrer par série">
-  <input type="text" id="filterNomSet" placeholder="Filtrer par nom du set">
-  <input type="text" id="filterBooster" placeholder="Filtrer par booster">
-  <input type="text" id="filterAnnee" placeholder="Filtrer par année">
-  <input type="text" id="filterDate" placeholder="Filtrer par date">
-  <input type="text" id="filterLangue" placeholder="Filtrer par langue">
-  <input type="text" id="filterType" placeholder="Filtrer par type">
-  <input type="text" id="filterNombre" placeholder="Filtrer par nombre">
-  <input type="text" id="filterCode" placeholder="Filtrer par code">
+  <select id="filterSerie"><option value="">Toutes les séries</option></select>
+  <select id="filterNomSet"><option value="">Tous les sets</option></select>
+  <select id="filterBooster"><option value="">Tous les boosters</option></select>
+  <select id="filterAnnee"><option value="">Toutes les années</option></select>
+  <select id="filterDate"><option value="">Toutes les dates</option></select>
+  <select id="filterLangue"><option value="">Toutes les langues</option></select>
+  <select id="filterType"><option value="">Tous les types</option></select>
+  <select id="filterNombre"><option value="">Tous les nombres</option></select>
+  <select id="filterCode"><option value="">Tous les codes</option></select>
 </div>
 
 <div id="cards">Chargement…</div>
 
 <script>
-// Exemple de données (à remplacer par ton propre JSON ou fichier)
+// Exemple de données (à remplacer par ton JSON ou fichier)
 const allCards = [
   { serie:"Alpha", nomSet:"Set1", booster:"B1", annee:"2022", date:"2022-01-01", langue:"FR", type:"Rare", nombre:"2", code:"A1", image:"https://via.placeholder.com/200x300" },
-  { serie:"Beta", nomSet:"Set2", booster:"B2", annee:"2023", date:"2023-02-01", langue:"EN", type:"Commun", nombre:"5", code:"B2", image:"https://via.placeholder.com/200x300" }
+  { serie:"Beta", nomSet:"Set2", booster:"B2", annee:"2023", date:"2023-02-01", langue:"EN", type:"Commun", nombre:"5", code:"B2", image:"https://via.placeholder.com/200x300" },
+  { serie:"Alpha", nomSet:"Set3", booster:"B1", annee:"2022", date:"2022-03-01", langue:"FR", type:"Rare", nombre:"1", code:"A3", image:"https://via.placeholder.com/200x300" }
   // Ajoute tes données ici
 ];
+
+// Fonction pour générer les options uniques pour un select
+function populateSelect(selectId, key) {
+  const select = document.getElementById(selectId);
+  const values = [...new Set(allCards.map(c => c[key]).filter(v => v))].sort();
+  values.forEach(v => {
+    const option = document.createElement("option");
+    option.value = v;
+    option.textContent = v;
+    select.appendChild(option);
+  });
+}
+
+// Remplir tous les filtres
+populateSelect("filterSerie", "serie");
+populateSelect("filterNomSet", "nomSet");
+populateSelect("filterBooster", "booster");
+populateSelect("filterAnnee", "annee");
+populateSelect("filterDate", "date");
+populateSelect("filterLangue", "langue");
+populateSelect("filterType", "type");
+populateSelect("filterNombre", "nombre");
+populateSelect("filterCode", "code");
 
 // Filtrage
 const filters = {
@@ -94,23 +118,20 @@ const filters = {
   code: document.getElementById("filterCode")
 };
 
-// Au chargement, filtrer seulement par série
-filters.serie.addEventListener("input", renderCards);
-
-// Ajouter écouteurs pour tous les filtres
-Object.values(filters).forEach(f => f.addEventListener("input", renderCards));
+// Écouteurs
+Object.values(filters).forEach(f => f.addEventListener("change", renderCards));
 
 function getFilteredCards() {
-  return allCards.filter(c => 
-    c.serie.toLowerCase().includes(filters.serie.value.toLowerCase()) &&
-    c.nomSet.toLowerCase().includes(filters.nomSet.value.toLowerCase()) &&
-    c.booster.toLowerCase().includes(filters.booster.value.toLowerCase()) &&
-    c.annee.toLowerCase().includes(filters.annee.value.toLowerCase()) &&
-    c.date.toLowerCase().includes(filters.date.value.toLowerCase()) &&
-    c.langue.toLowerCase().includes(filters.langue.value.toLowerCase()) &&
-    c.type.toLowerCase().includes(filters.type.value.toLowerCase()) &&
-    c.nombre.toLowerCase().includes(filters.nombre.value.toLowerCase()) &&
-    c.code.toLowerCase().includes(filters.code.value.toLowerCase())
+  return allCards.filter(c =>
+    (!filters.serie.value || c.serie === filters.serie.value) &&
+    (!filters.nomSet.value || c.nomSet === filters.nomSet.value) &&
+    (!filters.booster.value || c.booster === filters.booster.value) &&
+    (!filters.annee.value || c.annee === filters.annee.value) &&
+    (!filters.date.value || c.date === filters.date.value) &&
+    (!filters.langue.value || c.langue === filters.langue.value) &&
+    (!filters.type.value || c.type === filters.type.value) &&
+    (!filters.nombre.value || c.nombre === filters.nombre.value) &&
+    (!filters.code.value || c.code === filters.code.value)
   );
 }
 
@@ -137,7 +158,7 @@ function renderCards() {
   `).join("");
 }
 
-// Rendu initial : filtrer seulement par série vide = toutes
+// Rendu initial : toutes les cartes
 renderCards();
 </script>
 
