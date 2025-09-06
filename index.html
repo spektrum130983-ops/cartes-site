@@ -8,6 +8,9 @@ body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
 h1 { text-align: center; margin-bottom: 20px; }
 #controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 10px; }
 #controls input, #controls select, #controls button { padding: 5px; font-size: 1em; }
+#seriesButtons { text-align: center; margin-bottom: 10px; }
+#seriesButtons button { margin: 2px; padding: 5px 8px; font-size: 0.9em; cursor: pointer; }
+#counter { text-align: center; margin-bottom: 10px; font-weight: bold; }
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 10px; }
 .card { position: relative; width: 100%; height: 300px; border-radius: 10px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: all 0.3s ease; }
 .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -17,7 +20,6 @@ h1 { text-align: center; margin-bottom: 20px; }
 .card:hover .info { opacity: 1; }
 .card h3 { margin: 0 0 5px; font-size: 1.1em; }
 .card p { margin: 2px 0; font-size: 0.9em; color: #333; }
-#counter { text-align: center; margin-bottom: 10px; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -33,6 +35,7 @@ h1 { text-align: center; margin-bottom: 20px; }
   <button id="resetFilters">Réinitialiser</button>
 </div>
 
+<div id="seriesButtons"></div>
 <div id="counter"></div>
 <div id="cards">Chargement…</div>
 
@@ -65,6 +68,7 @@ fetch(sheetURL)
     fillFilter("filterLangue", allCards.map(c => c.langue));
     fillFilter("filterAnnee", allCards.map(c => c.annee));
 
+    createSeriesButtons();
     renderCards();
   })
   .catch(err => {
@@ -83,6 +87,45 @@ function fillFilter(selectId, values) {
   });
 }
 
+// Boutons pour chaque série
+function createSeriesButtons() {
+  const container = document.getElementById("seriesButtons");
+  container.innerHTML = "";
+  const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
+  series.forEach(s => {
+    const btn = document.createElement("button");
+    btn.textContent = s;
+    btn.addEventListener("click", () => renderCardsBySerie(s));
+    container.appendChild(btn);
+  });
+}
+
+// Affichage des cartes d'une série spécifique
+function renderCardsBySerie(serieName) {
+  const filtered = allCards.filter(c => c.serie === serieName);
+  document.getElementById("counter").textContent = `Cartes dans la série "${serieName}" : ${filtered.length}`;
+  const container = document.getElementById("cards");
+  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
+  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
+}
+
+// Générer HTML d’une carte
+function renderCardHTML(c) {
+  return `
+    <div class="card">
+      ${c.image ? `<img src="${c.image}" alt="${c.nomSet}">` : ""}
+      <div class="info">
+        <h3>${c.nomSet}</h3>
+        <p><b>Série :</b> ${c.serie}</p>
+        <p><b>Booster :</b> ${c.booster}</p>
+        <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
+        <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
+        <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
+      </div>
+    </div>
+  `;
+}
+
 // Événements de filtrage
 ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
   document.getElementById(id).addEventListener("input", renderCards);
@@ -96,7 +139,7 @@ document.getElementById("resetFilters").addEventListener("click", () => {
   renderCards();
 });
 
-// Filtrage des cartes
+// Filtrage des cartes selon recherche et filtres
 function getFilteredCards() {
   const searchText = document.getElementById("search").value.toLowerCase();
   const nomSetFilter = document.getElementById("filterNomSet").value;
@@ -106,45 +149,24 @@ function getFilteredCards() {
   const anneeFilter = document.getElementById("filterAnnee").value;
 
   return allCards.filter(c => {
-    // Recherche sur toutes les colonnes
     const fields = [c.nomSet, c.serie, c.booster, c.annee, c.date, c.langue, c.type, c.nombre, c.code];
     const matchesSearch = fields.some(f => (f || "").toString().toLowerCase().includes(searchText));
-
     const matchesNomSet = nomSetFilter ? c.nomSet === nomSetFilter : true;
     const matchesType = typeFilter ? c.type === typeFilter : true;
     const matchesBooster = boosterFilter ? c.booster === boosterFilter : true;
     const matchesLangue = langueFilter ? c.langue === langueFilter : true;
     const matchesAnnee = anneeFilter ? c.annee === anneeFilter : true;
-
     return matchesSearch && matchesNomSet && matchesType && matchesBooster && matchesLangue && matchesAnnee;
   });
 }
 
-// Affichage des cartes et compteur
+// Affichage des cartes avec compteur
 function renderCards() {
-  const container = document.getElementById("cards");
   const filtered = getFilteredCards();
-  
   document.getElementById("counter").textContent = `Cartes trouvées : ${filtered.length}`;
-
-  if(filtered.length === 0) {
-    container.innerHTML = "<p>Aucune carte trouvée.</p>";
-    return;
-  }
-
-  container.innerHTML = filtered.map(c => `
-    <div class="card">
-      ${c.image ? `<img src="${c.image}" alt="${c.nomSet}">` : ""}
-      <div class="info">
-        <h3>${c.nomSet}</h3>
-        <p><b>Série :</b> ${c.serie}</p>
-        <p><b>Booster :</b> ${c.booster}</p>
-        <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
-        <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
-        <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
-      </div>
-    </div>
-  `).join("");
+  const container = document.getElementById("cards");
+  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
+  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
 }
 </script>
 </body>
