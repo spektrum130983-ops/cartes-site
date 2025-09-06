@@ -60,70 +60,58 @@ h1 { text-align: center; margin-bottom: 20px; }
 <h1>Ma Collection de Cartes</h1>
 
 <div id="controls">
-  <input type="text" id="search" placeholder="Rechercher par nom ou série...">
-  <select id="filterType"><option value="">Tous les types</option></select>
+  <input type="text" id="filterSerie" placeholder="Filtrer par série">
+  <input type="text" id="filterNomSet" placeholder="Filtrer par nom du set">
+  <input type="text" id="filterBooster" placeholder="Filtrer par booster">
+  <input type="text" id="filterAnnee" placeholder="Filtrer par année">
+  <input type="text" id="filterDate" placeholder="Filtrer par date">
+  <input type="text" id="filterLangue" placeholder="Filtrer par langue">
+  <input type="text" id="filterType" placeholder="Filtrer par type">
+  <input type="text" id="filterNombre" placeholder="Filtrer par nombre">
+  <input type="text" id="filterCode" placeholder="Filtrer par code">
 </div>
 
 <div id="cards">Chargement…</div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
-let allCards = [];
-
-fetch(sheetURL)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substr(47).slice(0, -2));
-    const rows = json.table.rows;
-    allCards = rows.map(row => {
-      const serie = row.c[0]?.v || "";
-      const nomSet = row.c[1]?.v || "";
-      const booster = row.c[2]?.v || "";
-      const annee = row.c[3]?.v || row.c[3]?.f || "";
-      const date = row.c[4]?.f || "";
-      const langue = row.c[5]?.v || "";
-      const type = row.c[6]?.v || "";
-      const nombre = row.c[7]?.f || "";
-      const code = row.c[8]?.v || "";
-      let image = row.c[9]?.v || "";
-
-      if (image.includes("drive.google.com")) {
-        const match = image.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (match) image = `https://drive.google.com/uc?id=${match[1]}`;
-      }
-
-      return { serie, nomSet, booster, annee, date, langue, type, nombre, code, image };
-    });
-
-    // Filtre par type
-    const types = [...new Set(allCards.map(c => c.type).filter(t => t))];
-    const selectType = document.getElementById("filterType");
-    types.forEach(t => {
-      const option = document.createElement("option");
-      option.value = t;
-      option.textContent = t;
-      selectType.appendChild(option);
-    });
-
-    renderCards();
-  })
-  .catch(err => {
-    console.error("Erreur de chargement:", err);
-    document.getElementById("cards").innerHTML = "Impossible de charger les données.<br>" + err;
-  });
+// Exemple de données (à remplacer par ton propre JSON ou fichier)
+const allCards = [
+  { serie:"Alpha", nomSet:"Set1", booster:"B1", annee:"2022", date:"2022-01-01", langue:"FR", type:"Rare", nombre:"2", code:"A1", image:"https://via.placeholder.com/200x300" },
+  { serie:"Beta", nomSet:"Set2", booster:"B2", annee:"2023", date:"2023-02-01", langue:"EN", type:"Commun", nombre:"5", code:"B2", image:"https://via.placeholder.com/200x300" }
+  // Ajoute tes données ici
+];
 
 // Filtrage
-document.getElementById("search").addEventListener("input", renderCards);
-document.getElementById("filterType").addEventListener("change", renderCards);
+const filters = {
+  serie: document.getElementById("filterSerie"),
+  nomSet: document.getElementById("filterNomSet"),
+  booster: document.getElementById("filterBooster"),
+  annee: document.getElementById("filterAnnee"),
+  date: document.getElementById("filterDate"),
+  langue: document.getElementById("filterLangue"),
+  type: document.getElementById("filterType"),
+  nombre: document.getElementById("filterNombre"),
+  code: document.getElementById("filterCode")
+};
+
+// Au chargement, filtrer seulement par série
+filters.serie.addEventListener("input", renderCards);
+
+// Ajouter écouteurs pour tous les filtres
+Object.values(filters).forEach(f => f.addEventListener("input", renderCards));
 
 function getFilteredCards() {
-  const searchText = document.getElementById("search").value.toLowerCase();
-  const typeFilter = document.getElementById("filterType").value;
-  return allCards.filter(c => {
-    const matchesSearch = c.nomSet.toLowerCase().includes(searchText) || c.serie.toLowerCase().includes(searchText);
-    const matchesType = typeFilter ? c.type === typeFilter : true;
-    return matchesSearch && matchesType;
-  });
+  return allCards.filter(c => 
+    c.serie.toLowerCase().includes(filters.serie.value.toLowerCase()) &&
+    c.nomSet.toLowerCase().includes(filters.nomSet.value.toLowerCase()) &&
+    c.booster.toLowerCase().includes(filters.booster.value.toLowerCase()) &&
+    c.annee.toLowerCase().includes(filters.annee.value.toLowerCase()) &&
+    c.date.toLowerCase().includes(filters.date.value.toLowerCase()) &&
+    c.langue.toLowerCase().includes(filters.langue.value.toLowerCase()) &&
+    c.type.toLowerCase().includes(filters.type.value.toLowerCase()) &&
+    c.nombre.toLowerCase().includes(filters.nombre.value.toLowerCase()) &&
+    c.code.toLowerCase().includes(filters.code.value.toLowerCase())
+  );
 }
 
 function renderCards() {
@@ -136,7 +124,7 @@ function renderCards() {
 
   container.innerHTML = filtered.map(c => `
     <div class="card">
-      ${c.image ? `<img src="${c.image}" alt="${c.nomSet}">` : ""}
+      <img src="${c.image}" alt="${c.nomSet}">
       <div class="info">
         <h3>${c.nomSet}</h3>
         <p><b>Série :</b> ${c.serie}</p>
@@ -148,6 +136,9 @@ function renderCards() {
     </div>
   `).join("");
 }
+
+// Rendu initial : filtrer seulement par série vide = toutes
+renderCards();
 </script>
 
 </body>
