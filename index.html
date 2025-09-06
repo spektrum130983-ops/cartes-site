@@ -23,7 +23,7 @@ h1 { text-align: center; margin-bottom: 20px; }
 <h1>Ma Collection de Cartes</h1>
 
 <div id="controls">
-  <input type="text" id="search" placeholder="Rechercher par nom ou série...">
+  <input type="text" id="search" placeholder="Rechercher sur toutes les colonnes...">
   <select id="filterNomSet"><option value="">Tous les Sets</option></select>
   <select id="filterType"><option value="">Tous les types</option></select>
   <select id="filterBooster"><option value="">Tous les boosters</option></select>
@@ -104,12 +104,16 @@ function getFilteredCards() {
   const anneeFilter = document.getElementById("filterAnnee").value;
 
   return allCards.filter(c => {
-    const matchesSearch = c.nomSet.toLowerCase().includes(searchText) || c.serie.toLowerCase().includes(searchText);
+    // Recherche sur toutes les colonnes
+    const fields = [c.nomSet, c.serie, c.booster, c.annee, c.date, c.langue, c.type, c.nombre, c.code];
+    const matchesSearch = fields.some(f => f.toLowerCase().includes(searchText));
+
     const matchesNomSet = nomSetFilter ? c.nomSet === nomSetFilter : true;
     const matchesType = typeFilter ? c.type === typeFilter : true;
     const matchesBooster = boosterFilter ? c.booster === boosterFilter : true;
     const matchesLangue = langueFilter ? c.langue === langueFilter : true;
     const matchesAnnee = anneeFilter ? c.annee === anneeFilter : true;
+
     return matchesSearch && matchesNomSet && matchesType && matchesBooster && matchesLangue && matchesAnnee;
   });
 }
