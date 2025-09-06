@@ -75,13 +75,7 @@ h1 { text-align: center; margin-bottom: 20px; }
 <div id="cards">Chargement…</div>
 
 <script>
-// Exemple de données (à remplacer par ton JSON ou fichier)
-const allCards = [
-  { serie:"Alpha", nomSet:"Set1", booster:"B1", annee:"2022", date:"2022-01-01", langue:"FR", type:"Rare", nombre:"2", code:"A1", image:"https://via.placeholder.com/200x300" },
-  { serie:"Beta", nomSet:"Set2", booster:"B2", annee:"2023", date:"2023-02-01", langue:"EN", type:"Commun", nombre:"5", code:"B2", image:"https://via.placeholder.com/200x300" },
-  { serie:"Alpha", nomSet:"Set3", booster:"B1", annee:"2022", date:"2022-03-01", langue:"FR", type:"Rare", nombre:"1", code:"A3", image:"https://via.placeholder.com/200x300" }
-  // Ajoute tes données ici
-];
+
 // Bouton réinitialiser
 document.getElementById("resetFilters").addEventListener("click", () => {
   Object.values(filters).forEach(f => f.value = "");
@@ -169,4 +163,5 @@ renderCards();
 
 </body>
 </html>
+
 
