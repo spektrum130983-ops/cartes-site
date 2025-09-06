@@ -69,6 +69,7 @@ h1 { text-align: center; margin-bottom: 20px; }
   <select id="filterType"><option value="">Tous les types</option></select>
   <select id="filterNombre"><option value="">Tous les nombres</option></select>
   <select id="filterCode"><option value="">Tous les codes</option></select>
+  <button id="resetFilters">Réinitialiser les filtres</button>
 </div>
 
 <div id="cards">Chargement…</div>
@@ -81,7 +82,11 @@ const allCards = [
   { serie:"Alpha", nomSet:"Set3", booster:"B1", annee:"2022", date:"2022-03-01", langue:"FR", type:"Rare", nombre:"1", code:"A3", image:"https://via.placeholder.com/200x300" }
   // Ajoute tes données ici
 ];
-
+// Bouton réinitialiser
+document.getElementById("resetFilters").addEventListener("click", () => {
+  Object.values(filters).forEach(f => f.value = "");
+  renderCards(); // Rendu toutes les cartes
+});  
 // Fonction pour générer les options uniques pour un select
 function populateSelect(selectId, key) {
   const select = document.getElementById(selectId);
@@ -164,3 +169,4 @@ renderCards();
 
 </body>
 </html>
+
