@@ -62,13 +62,15 @@
 
         document.getElementById("cards").innerHTML = html;
       })
-      .catch(err => {
-        console.error("Erreur de chargement:", err);
-        document.getElementById("cards").innerHTML = "Impossible de charger les données.";
-      });
+     .catch(err => {
+    console.error("Erreur de chargement:", err);
+    document.getElementById("cards").innerHTML = `Impossible de charger les données.<br>${err}`;
+});
+
   </script>
 </body>
 </html>
+
 
 
 
