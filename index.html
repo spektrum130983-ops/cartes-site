@@ -22,7 +22,6 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBl
 fetch(sheetURL)
   .then(res => res.text())
   .then(text => {
-    // Nettoyer l’enrobage Google Sheets
     const json = JSON.parse(text.substr(47).slice(0, -2));
     const rows = json.table.rows;
     let html = "";
@@ -39,11 +38,13 @@ fetch(sheetURL)
       const code = row.c[8]?.v || "";
       let image = row.c[9]?.v || "";
 
-      // Normaliser les liens Google Drive
+      // --- Conversion automatique des liens Google Drive ---
       if (image.includes("drive.google.com")) {
+        // Extraire l'ID quel que soit le format (/view, /preview, /download)
         const match = image.match(/\/d\/([a-zA-Z0-9_-]+)/);
         if (match) {
           const id = match[1];
+          // Générer le lien direct stable
           image = `https://drive.google.com/uc?id=${id}`;
         }
       }
@@ -69,8 +70,10 @@ fetch(sheetURL)
   });
 </script>
 
+
 </body>
 </html>
+
 
 
 
