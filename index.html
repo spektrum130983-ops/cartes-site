@@ -327,7 +327,7 @@ function getFilteredCards() {
 
 function renderCards() {
   const filtered = getFilteredCards();
-  document.getElementById("counter").textContent = `Cartes trouvées : ${filtered.length}`;
+  document.getElementById("counter").textContent = `Boosters : ${filtered.length}`;
   const container = document.getElementById("cards");
   if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
   container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
@@ -335,5 +335,6 @@ function renderCards() {
 </script>
 </body>
 </html>
+
 
 
