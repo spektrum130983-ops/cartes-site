@@ -11,7 +11,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background: #ffe4e1;
+  background: #ffe4e1; /* couleur pastel manga */
   color: #333;
 }
 
@@ -55,15 +55,26 @@ h1 {
   transition: all 0.3s ease;
 }
 
+#controls input:focus, #controls select:focus {
+  border-color: #ff69b4;
+}
+
 #controls button {
   background: #ff69b4;
   color: white;
   cursor: pointer;
   font-weight: bold;
 }
-#controls button:hover { background: #ff1493; }
 
-#seriesButtons { text-align: center; margin-bottom: 10px; }
+#controls button:hover {
+  background: #ff1493;
+}
+
+#seriesButtons {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 #seriesButtons button {
   margin: 2px;
   padding: 5px 10px;
@@ -74,6 +85,7 @@ h1 {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 #seriesButtons button.active, #seriesButtons button:hover {
   background: #ff69b4;
   color: white;
@@ -81,7 +93,12 @@ h1 {
   transform: scale(1.05);
 }
 
-#counter { text-align: center; font-weight: bold; margin-bottom: 10px; }
+#counter {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1em;
+}
 
 #cards {
   display: grid;
@@ -99,60 +116,121 @@ h1 {
   overflow: hidden;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
   border: 3px solid #ffb6c1;
   background: #fff0f5;
-  transition: all 0.3s ease;
 }
-.card:hover { transform: translateY(-5px); }
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transform: translateY(-5px);
+}
 
 .card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.3s ease;
+  display: block;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.card:hover img { opacity: 0; }
+
+.card:hover img {
+  opacity: 0;
+}
 
 .card .info {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   padding: 10px;
-  background: rgba(255,228,225,0.95);
+  box-sizing: border-box;
+  background: rgba(255, 228, 225, 0.95);
   opacity: 0;
-  transition: opacity 0.3s ease;
   overflow-y: auto;
+  transition: opacity 0.3s ease;
   font-size: 0.85em;
 }
-.card:hover .info { opacity: 1; }
 
-.card h3 { margin: 0 0 5px; font-size: 1em; color: #ff1493; }
+.card:hover .info {
+  opacity: 1;
+}
 
-.card p { margin: 2px 0; }
+.card h3 {
+  margin: 0 0 5px;
+  font-size: 1em;
+  color: #ff1493;
+  text-shadow: 1px 1px #fff;
+}
+
+.card p {
+  margin: 2px 0;
+  color: #333;
+  line-height: 1.2em;
+}
+
+/* Scrollbar manga style */
+.card .info::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card .info::-webkit-scrollbar-track {
+  background: #ffe4e1;
+  border-radius: 10px;
+}
+
+.card .info::-webkit-scrollbar-thumb {
+  background: #ff69b4;
+  border-radius: 10px;
+}
 
 /* === Lightbox === */
 #lightbox {
-  display: none;
+  display: none; /* Caché par défaut */
   position: fixed;
   z-index: 9999;
-  inset: 0;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,0.85);
   justify-content: center;
   align-items: center;
 }
+
 #lightbox img {
   max-width: 90%;
   max-height: 90%;
   border-radius: 15px;
   box-shadow: 0 0 25px rgba(255,255,255,0.8);
+  animation: zoomIn 0.25s ease;
 }
+
 #closeLightbox {
   position: absolute;
-  top: 20px; right: 40px;
+  top: 20px;
+  right: 40px;
   font-size: 40px;
+  font-weight: bold;
   color: white;
   cursor: pointer;
+  transition: 0.3s;
+  user-select: none;
 }
-#closeLightbox:hover { color: #ff69b4; }
+
+#closeLightbox:hover {
+  color: #ff69b4;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive small screens */
+@media (max-width: 480px) {
+  #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
+  .card { height: 260px; }
+}
 </style>
 </head>
 <body>
@@ -163,7 +241,11 @@ h1 {
 </header>
 
 <div id="controls">
-  <input type="text" id="search" placeholder="Rechercher...">
+  <input type="text" id="search" placeholder="Rechercher sur toutes les colonnes...">
+  <select id="filterNomSet"><option value="">Tous les Sets</option></select>
+  <select id="filterType"><option value="">Tous les types</option></select>
+  <select id="filterBooster"><option value="">Tous les boosters</option></select>
+  <select id="filterLangue"><option value="">Toutes les langues</option></select>
   <select id="filterAnnee"><option value="">Toutes les années</option></select>
   <button id="resetFilters">Réinitialiser</button>
 </div>
@@ -173,12 +255,13 @@ h1 {
 <div id="cards">Chargement…</div>
 
 <!-- Lightbox -->
-<div id="lightbox">
-  <span id="closeLightbox">&times;</span>
-  <img id="lightboxImg" src="" alt="">
+<div id="lightbox" aria-hidden="true" role="dialog">
+  <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
+  <img id="lightboxImg" src="" alt="Image en grand">
 </div>
 
 <script>
+// === Script inchangé pour les données, filtres et boutons de série ===
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 let allCards = [];
 
@@ -186,64 +269,176 @@ fetch(sheetURL)
   .then(res => res.text())
   .then(text => {
     const json = JSON.parse(text.substr(47).slice(0, -2));
-    allCards = json.table.rows.map(r => ({
-      serie: r.c[0]?.v || "",
-      nomSet: r.c[1]?.v || "",
-      booster: r.c[2]?.v || "",
-      annee: r.c[3]?.f ? new Date(r.c[3].f).getFullYear().toString() : (r.c[3]?.v || ""),
-      image: r.c[9]?.v || ""
+    allCards = json.table.rows.map(row => ({
+      serie: row.c[0]?.v || "",
+      nomSet: row.c[1]?.v || "",
+      booster: row.c[2]?.v || "",
+     annee: row.c[3]?.f 
+          ? new Date(row.c[3].f).getFullYear().toString()   // si format date → extraire l'année
+          : (row.c[3]?.v ? row.c[3].v.toString() : ""),     // sinon garder tel quel
+      date: row.c[4]?.f || "",
+      langue: row.c[5]?.v || "",
+      type: row.c[6]?.v || "",
+      nombre: row.c[7]?.f || "",
+      code: row.c[8]?.v || "",
+      image: row.c[9]?.v || ""
     }));
+
+    fillFilter("filterNomSet", allCards.map(c => c.nomSet));
+    fillFilter("filterType", allCards.map(c => c.type));
+    fillFilter("filterBooster", allCards.map(c => c.booster));
+    fillFilter("filterLangue", allCards.map(c => c.langue));
     fillFilter("filterAnnee", allCards.map(c => c.annee));
+
+    
+
+    createSeriesButtons();
     renderCards();
+  })
+  .catch(err => {
+    console.error("Erreur de chargement:", err);
+    document.getElementById("cards").innerHTML = "Impossible de charger les données.<br>" + err;
   });
 
-function fillFilter(id, vals) {
-  const select = document.getElementById(id);
-  [...new Set(vals.filter(v => v))].sort((a,b)=>a-b).forEach(v=>{
-    let o=document.createElement("option");o.value=v;o.textContent=v;select.appendChild(o);
+function fillFilter(selectId, values) {
+  const select = document.getElementById(selectId);
+  let unique = [...new Set(values.filter(v => v))];
+
+  // Si c'est pour les années, on trie numériquement
+  if (selectId === "filterAnnee") {
+    unique = unique.sort((a, b) => parseInt(a) - parseInt(b));
+  } else {
+    unique = unique.sort();
+  }
+
+  unique.forEach(v => {
+    const option = document.createElement("option");
+    option.value = v;
+    option.textContent = v;
+    select.appendChild(option);
   });
 }
 
+
+function createSeriesButtons() {
+  const container = document.getElementById("seriesButtons");
+  container.innerHTML = "";
+  const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
+  series.forEach(s => {
+    const btn = document.createElement("button");
+    btn.textContent = s;
+    btn.addEventListener("click", () => {
+      container.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderCardsBySerie(s);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function renderCardsBySerie(serieName) {
+  const filtered = allCards.filter(c => c.serie === serieName);
+  document.getElementById("counter").textContent = `Cartes dans la série "${serieName}" : ${filtered.length}`;
+  const container = document.getElementById("cards");
+  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
+  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
+}
+
+function renderCardHTML(c) {
+  const imgSrc = c.image ? c.image : "https://via.placeholder.com/400x600?text=Pas+d'image";
+  return `
+    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}">
+      <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
+      <div class="info">
+        <h3>${c.nomSet}</h3>
+        <p><b>Série :</b> ${c.serie}</p>
+        <p><b>Booster :</b> ${c.booster}</p>
+        <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
+        <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
+        <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
+      </div>
+    </div>
+  `;
+}
+
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
+  document.getElementById(id).addEventListener("input", renderCards);
+});
+
+document.getElementById("resetFilters").addEventListener("click", () => {
+  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.querySelectorAll("#seriesButtons button").forEach(b => b.classList.remove("active"));
+  renderCards();
+});
+
 function getFilteredCards() {
-  const year = document.getElementById("filterAnnee").value;
-  const search = document.getElementById("search").value.toLowerCase();
-  return allCards.filter(c =>
-    (!year || c.annee===year) &&
-    (!search || c.nomSet.toLowerCase().includes(search))
-  );
+  const searchText = document.getElementById("search").value.toLowerCase();
+  const nomSetFilter = document.getElementById("filterNomSet").value;
+  const typeFilter = document.getElementById("filterType").value;
+  const boosterFilter = document.getElementById("filterBooster").value;
+  const langueFilter = document.getElementById("filterLangue").value;
+  const anneeFilter = document.getElementById("filterAnnee").value;
+
+  return allCards.filter(c => {
+    const fields = [c.nomSet, c.serie, c.booster, c.annee, c.date, c.langue, c.type, c.nombre, c.code];
+    const matchesSearch = fields.some(f => (f || "").toString().toLowerCase().includes(searchText));
+    const matchesNomSet = nomSetFilter ? c.nomSet === nomSetFilter : true;
+    const matchesType = typeFilter ? c.type === typeFilter : true;
+    const matchesBooster = boosterFilter ? c.booster === boosterFilter : true;
+    const matchesLangue = langueFilter ? c.langue === langueFilter : true;
+    const matchesAnnee = anneeFilter ? c.annee === anneeFilter : true;
+    return matchesSearch && matchesNomSet && matchesType && matchesBooster && matchesLangue && matchesAnnee;
+  });
 }
 
 function renderCards() {
   const filtered = getFilteredCards();
   document.getElementById("counter").textContent = `Boosters : ${filtered.length}`;
-  document.getElementById("cards").innerHTML = filtered.map(c => `
-    <div class="card">
-      ${c.image ? `<img src="${c.image}" alt="">` : ""}
-      <div class="info">
-        <h3>${c.nomSet}</h3>
-        <p><b>Série :</b> ${c.serie}</p>
-        <p><b>Année :</b> ${c.annee}</p>
-      </div>
-    </div>
-  `).join("");
+  const container = document.getElementById("cards");
+  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
+  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
 }
 
-document.getElementById("search").addEventListener("input", renderCards);
-document.getElementById("filterAnnee").addEventListener("change", renderCards);
-document.getElementById("resetFilters").addEventListener("click", ()=>{
-  document.getElementById("search").value="";
-  document.getElementById("filterAnnee").value="";
-  renderCards();
+// === Lightbox ===
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const closeLightboxBtn = document.getElementById('closeLightbox');
+
+// Delegation: clique sur une .card -> ouvre la lightbox avec l'image correspondante
+document.getElementById('cards').addEventListener('click', function(e) {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const img = card.querySelector('img');
+  if (!img || !img.src) return;
+  lightboxImg.src = img.src;
+  lightbox.style.display = 'flex';
+  lightbox.setAttribute('aria-hidden', 'false');
 });
 
-/* === Lightbox avec delegation === */
-document.addEventListener("click", e=>{
-  if(e.target.matches(".card img")) {
-    document.getElementById("lightboxImg").src = e.target.src;
-    document.getElementById("lightbox").style.display="flex";
+// Fermer avec la croix
+closeLightboxBtn.addEventListener('click', () => {
+  lightbox.style.display = 'none';
+  lightbox.setAttribute('aria-hidden', 'true');
+  lightboxImg.src = '';
+});
+
+// Fermer si on clique à l'extérieur de l'image (sur le fond)
+lightbox.addEventListener('click', e => {
+  if (e.target === lightbox) {
+    lightbox.style.display = 'none';
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightboxImg.src = '';
   }
-  if(e.target.id==="closeLightbox" || e.target.id==="lightbox") {
-    document.getElementById("lightbox").style.display="none";
+});
+
+// Fermer avec la touche ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+    lightbox.style.display = 'none';
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightboxImg.src = '';
   }
 });
 </script>
