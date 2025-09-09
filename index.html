@@ -131,7 +131,7 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 .card:hover img {
@@ -187,7 +187,7 @@ h1 {
 
 /* === Lightbox === */
 #lightbox {
-  display: none; /* Caché par défaut */
+  display: none;
   position: fixed;
   z-index: 9999;
   top: 0; left: 0;
@@ -202,7 +202,7 @@ h1 {
   max-height: 90%;
   border-radius: 15px;
   box-shadow: 0 0 25px rgba(255,255,255,0.8);
-  animation: zoomIn 0.25s ease;
+  animation: zoomIn 0.3s ease;
 }
 
 #closeLightbox {
@@ -214,7 +214,6 @@ h1 {
   color: white;
   cursor: pointer;
   transition: 0.3s;
-  user-select: none;
 }
 
 #closeLightbox:hover {
@@ -222,14 +221,8 @@ h1 {
 }
 
 @keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
+  from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
-}
-
-/* Responsive small screens */
-@media (max-width: 480px) {
-  #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
-  .card { height: 260px; }
 }
 </style>
 </head>
@@ -255,8 +248,8 @@ h1 {
 <div id="cards">Chargement…</div>
 
 <!-- Lightbox -->
-<div id="lightbox" aria-hidden="true" role="dialog">
-  <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
+<div id="lightbox">
+  <span id="closeLightbox">&times;</span>
   <img id="lightboxImg" src="" alt="Image en grand">
 </div>
 
@@ -273,7 +266,10 @@ fetch(sheetURL)
       serie: row.c[0]?.v || "",
       nomSet: row.c[1]?.v || "",
       booster: row.c[2]?.v || "",
-      annee: row.c[3]?.v || row.c[3]?.f || "",
+      // on récupère toujours l'année propre
+      annee: row.c[3]?.f 
+                ? new Date(row.c[3].f).getFullYear().toString()
+                : (row.c[3]?.v ? row.c[3].v.toString() : ""),
       date: row.c[4]?.f || "",
       langue: row.c[5]?.v || "",
       type: row.c[6]?.v || "",
@@ -298,7 +294,16 @@ fetch(sheetURL)
 
 function fillFilter(selectId, values) {
   const select = document.getElementById(selectId);
-  [...new Set(values.filter(v => v))].sort().forEach(v => {
+  let unique = [...new Set(values.filter(v => v))];
+
+  // si c'est pour les années → tri numérique
+  if (selectId === "filterAnnee") {
+    unique = unique.sort((a, b) => parseInt(a) - parseInt(b));
+  } else {
+    unique = unique.sort();
+  }
+
+  unique.forEach(v => {
     const option = document.createElement("option");
     option.value = v;
     option.textContent = v;
@@ -331,10 +336,9 @@ function renderCardsBySerie(serieName) {
 }
 
 function renderCardHTML(c) {
-  const imgSrc = c.image ? c.image : "https://via.placeholder.com/400x600?text=Pas+d'image";
   return `
-    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}">
-      <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
+    <div class="card">
+      ${c.image ? `<img src="${c.image}" alt="${c.nomSet}">` : ""}
       <div class="info">
         <h3>${c.nomSet}</h3>
         <p><b>Série :</b> ${c.serie}</p>
@@ -387,44 +391,24 @@ function renderCards() {
   container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
 }
 
-// === Lightbox ===
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightboxImg');
-const closeLightboxBtn = document.getElementById('closeLightbox');
-
-// Delegation: clique sur une .card -> ouvre la lightbox avec l'image correspondante
-document.getElementById('cards').addEventListener('click', function(e) {
-  const card = e.target.closest('.card');
-  if (!card) return;
-  const img = card.querySelector('img');
-  if (!img || !img.src) return;
-  lightboxImg.src = img.src;
-  lightbox.style.display = 'flex';
-  lightbox.setAttribute('aria-hidden', 'false');
-});
-
-// Fermer avec la croix
-closeLightboxBtn.addEventListener('click', () => {
-  lightbox.style.display = 'none';
-  lightbox.setAttribute('aria-hidden', 'true');
-  lightboxImg.src = '';
-});
-
-// Fermer si on clique à l'extérieur de l'image (sur le fond)
-lightbox.addEventListener('click', e => {
-  if (e.target === lightbox) {
-    lightbox.style.display = 'none';
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImg.src = '';
+// === Lightbox : agrandir l'image au clic ===
+document.addEventListener("click", e => {
+  const img = e.target.closest(".card img");
+  if(img) {
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    lightboxImg.src = img.src;
+    lightbox.style.display = "flex";
   }
 });
 
-// Fermer avec la touche ESC
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && lightbox.style.display === 'flex') {
-    lightbox.style.display = 'none';
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImg.src = '';
+document.getElementById("closeLightbox").addEventListener("click", () => {
+  document.getElementById("lightbox").style.display = "none";
+});
+
+document.getElementById("lightbox").addEventListener("click", e => {
+  if(e.target.id === "lightbox") {
+    e.currentTarget.style.display = "none";
   }
 });
 </script>
