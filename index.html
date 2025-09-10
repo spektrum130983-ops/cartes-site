@@ -11,7 +11,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background: #ffe4e1; /* couleur pastel manga */
+  background: #ffe4e1;
   color: #333;
 }
 
@@ -187,7 +187,7 @@ h1 {
 
 /* === Lightbox === */
 #lightbox {
-  display: none; /* Caché par défaut */
+  display: none;
   position: fixed;
   z-index: 9999;
   top: 0; left: 0;
@@ -222,7 +222,6 @@ h1 {
   color: #ff69b4;
 }
 
-/* Boutons lightbox */
 #lightboxButtons {
   margin-top: 20px;
   display: flex;
@@ -251,7 +250,6 @@ h1 {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* Responsive small screens */
 @media (max-width: 480px) {
   #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
   .card { height: 260px; }
@@ -286,7 +284,7 @@ h1 {
   <div id="lightboxButtons">
     <button id="btnZoom">🔍 Agrandir</button>
     <button id="btnPdf">📄 Ouvrir PDF</button>
-    <button id="btnImg">🖼 Ouvrir l'image</button>
+    <button id="btnImg">👁 Voir carte</button>
   </div>
 </div>
 
@@ -302,9 +300,7 @@ fetch(sheetURL)
       serie: row.c[0]?.v || "",
       nomSet: row.c[1]?.v || "",
       booster: row.c[2]?.v || "",
-      annee: row.c[3]?.f 
-          ? new Date(row.c[3].f).getFullYear().toString()
-          : (row.c[3]?.v ? row.c[3].v.toString() : ""),
+      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString() : ""),
       date: row.c[4]?.f || "",
       langue: row.c[5]?.v || "",
       type: row.c[6]?.v || "",
@@ -312,7 +308,7 @@ fetch(sheetURL)
       code: row.c[8]?.v || "",
       image: row.c[9]?.v || "",
       pdf: row.c[10]?.v || "",
-      imageOriginal: row.c[11]?.v || ""   // colonne L
+      imageOriginal: row.c[11]?.v || "" // colonne L
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -332,19 +328,9 @@ fetch(sheetURL)
 function fillFilter(selectId, values) {
   const select = document.getElementById(selectId);
   let unique = [...new Set(values.filter(v => v))];
-
-  if (selectId === "filterAnnee") {
-    unique = unique.sort((a, b) => parseInt(a) - parseInt(b));
-  } else {
-    unique = unique.sort();
-  }
-
-  unique.forEach(v => {
-    const option = document.createElement("option");
-    option.value = v;
-    option.textContent = v;
-    select.appendChild(option);
-  });
+  if (selectId === "filterAnnee") unique.sort((a,b)=>parseInt(a)-parseInt(b));
+  else unique.sort();
+  unique.forEach(v => { const option = document.createElement("option"); option.value=v; option.textContent=v; select.appendChild(option); });
 }
 
 function createSeriesButtons() {
@@ -355,7 +341,7 @@ function createSeriesButtons() {
     const btn = document.createElement("button");
     btn.textContent = s;
     btn.addEventListener("click", () => {
-      container.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       renderCardsBySerie(s);
     });
@@ -367,36 +353,29 @@ function renderCardsBySerie(serieName) {
   const filtered = allCards.filter(c => c.serie === serieName);
   document.getElementById("counter").textContent = `Cartes dans la série "${serieName}" : ${filtered.length}`;
   const container = document.getElementById("cards");
-  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
-  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
+  container.innerHTML = filtered.length ? filtered.map(c => renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
 function renderCardHTML(c) {
-  const imgSrc = c.image ? c.image : "https://via.placeholder.com/400x600?text=Pas+d'image";
-  return `
-    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-set="${c.nomSet}">
-      <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
-      <div class="info">
-        <h3>${c.nomSet}</h3>
-        <p><b>Série :</b> ${c.serie}</p>
-        <p><b>Booster :</b> ${c.booster}</p>
-        <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
-        <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
-        <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
-      </div>
+  const imgSrc = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+  return `<div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-set="${c.nomSet}">
+    <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
+    <div class="info">
+      <h3>${c.nomSet}</h3>
+      <p><b>Série :</b> ${c.serie}</p>
+      <p><b>Booster :</b> ${c.booster}</p>
+      <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
+      <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
+      <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
     </div>
-  `;
+  </div>`;
 }
 
-["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
-  document.getElementById(id).addEventListener("input", renderCards);
-});
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => document.getElementById(id).addEventListener("input", renderCards));
 
 document.getElementById("resetFilters").addEventListener("click", () => {
-  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
-    document.getElementById(id).value = "";
-  });
-  document.querySelectorAll("#seriesButtons button").forEach(b => b.classList.remove("active"));
+  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>document.getElementById(id).value="");
+  document.querySelectorAll("#seriesButtons button").forEach(b=>b.classList.remove("active"));
   renderCards();
 });
 
@@ -408,15 +387,12 @@ function getFilteredCards() {
   const langueFilter = document.getElementById("filterLangue").value;
   const anneeFilter = document.getElementById("filterAnnee").value;
 
-  return allCards.filter(c => {
-    const fields = [c.nomSet, c.serie, c.booster, c.annee, c.date, c.langue, c.type, c.nombre, c.code];
-    const matchesSearch = fields.some(f => (f || "").toString().toLowerCase().includes(searchText));
-    const matchesNomSet = nomSetFilter ? c.nomSet === nomSetFilter : true;
-    const matchesType = typeFilter ? c.type === typeFilter : true;
-    const matchesBooster = boosterFilter ? c.booster === boosterFilter : true;
-    const matchesLangue = langueFilter ? c.langue === langueFilter : true;
-    const matchesAnnee = anneeFilter ? c.annee === anneeFilter : true;
-    return matchesSearch && matchesNomSet && matchesType && matchesBooster && matchesLangue && matchesAnnee;
+  return allCards.filter(c=>{
+    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code];
+    const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) && (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) && (langueFilter?c.langue===langueFilter:true) &&
+           (anneeFilter?c.annee===anneeFilter:true);
   });
 }
 
@@ -424,8 +400,7 @@ function renderCards() {
   const filtered = getFilteredCards();
   document.getElementById("counter").textContent = `Boosters : ${filtered.length}`;
   const container = document.getElementById("cards");
-  if(filtered.length === 0) { container.innerHTML = "<p>Aucune carte trouvée.</p>"; return; }
-  container.innerHTML = filtered.map(c => renderCardHTML(c)).join("");
+  container.innerHTML = filtered.length ? filtered.map(c=>renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
 // === Lightbox ===
@@ -436,83 +411,50 @@ const btnZoom = document.getElementById('btnZoom');
 const btnPdf = document.getElementById('btnPdf');
 const btnImg = document.getElementById('btnImg');
 
-// Ouvrir une carte
 document.getElementById('cards').addEventListener('click', function(e) {
   const card = e.target.closest('.card');
-  if (!card) return;
+  if(!card) return;
   const img = card.querySelector('img');
-  if (!img || !img.src) return;
+  if(!img || !img.src) return;
 
   lightboxImg.src = img.src;
   lightbox.style.display = 'flex';
-  lightbox.setAttribute('aria-hidden', 'false');
+  lightbox.setAttribute('aria-hidden','false');
 
   const setName = card.dataset.set;
-  const cardData = allCards.find(c => c.nomSet === setName);
+  const cardData = allCards.find(c => c.nomSet===setName);
 
-  if (cardData) {
-    // PDF
-    if (cardData.pdf) {
-      btnPdf.style.display = "inline-block";
-      btnPdf.dataset.url = cardData.pdf;
-    } else {
-      btnPdf.style.display = "none";
-      btnPdf.dataset.url = "";
-    }
+  if(cardData){
+    if(cardData.pdf){ btnPdf.style.display="inline-block"; btnPdf.dataset.url=cardData.pdf; }
+    else { btnPdf.style.display="none"; btnPdf.dataset.url=""; }
 
-    // Image originale (colonne L)
-    if (cardData.imageOriginal) {
-      btnImg.style.display = "inline-block";
-      btnImg.dataset.url = cardData.imageOriginal;
-    } else {
-      btnImg.style.display = "none";
-      btnImg.dataset.url = "";
-    }
+    if(cardData.imageOriginal){ btnImg.style.display="inline-block"; btnImg.dataset.url=cardData.imageOriginal; }
+    else { btnImg.style.display="none"; btnImg.dataset.url=""; }
   }
 });
 
-// Bouton agrandir
-btnZoom.addEventListener('click', () => {
-  if (lightboxImg.requestFullscreen) {
-    lightboxImg.requestFullscreen();
-  } else if (lightboxImg.webkitRequestFullscreen) {
-    lightboxImg.webkitRequestFullscreen();
+btnZoom.addEventListener('click', ()=>{ if(lightboxImg.requestFullscreen) lightboxImg.requestFullscreen(); else if(lightboxImg.webkitRequestFullscreen) lightboxImg.webkitRequestFullscreen(); });
+btnPdf.addEventListener('click', ()=>{ const url=btnPdf.dataset.url; if(url) window.open(url,'_blank'); });
+btnImg.addEventListener('click', ()=>{
+  const url=btnImg.dataset.url;
+  if(url){
+    const width=800; const height=600;
+    const left=(screen.width/2)-(width/2);
+    const top=(screen.height/2)-(height/2);
+    window.open(url,'VoirCarte',`width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
   }
 });
 
-// Bouton ouvrir PDF
-btnPdf.addEventListener('click', () => {
-  const url = btnPdf.dataset.url;
-  if (url) window.open(url, '_blank');
+closeLightboxBtn.addEventListener('click', ()=>{
+  lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src='';
 });
 
-// Bouton ouvrir image originale
-btnImg.addEventListener('click', () => {
-  const url = btnImg.dataset.url;
-  if (url) window.open(url, '_blank');
+lightbox.addEventListener('click', e=>{
+  if(e.target===lightbox){ lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src=''; }
 });
 
-// Fermer lightbox
-closeLightboxBtn.addEventListener('click', () => {
-  lightbox.style.display = 'none';
-  lightbox.setAttribute('aria-hidden', 'true');
-  lightboxImg.src = '';
-});
-
-lightbox.addEventListener('click', e => {
-  if (e.target === lightbox) {
-    lightbox.style.display = 'none';
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImg.src = '';
-  }
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && lightbox.style.display === 'flex') {
-    lightbox.style.display = 'none';
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImg.src = '';
-  }
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && lightbox.style.display==='flex'){ lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src=''; }
 });
 </script>
 </body>
