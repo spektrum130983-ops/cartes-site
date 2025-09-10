@@ -286,6 +286,7 @@ h1 {
   <div id="lightboxButtons">
     <button id="btnZoom">🔍 Agrandir</button>
     <button id="btnPdf">📄 Ouvrir PDF</button>
+    <button id="btnImg">🖼 Ouvrir l'image</button>
   </div>
 </div>
 
@@ -310,7 +311,8 @@ fetch(sheetURL)
       nombre: row.c[7]?.f || "",
       code: row.c[8]?.v || "",
       image: row.c[9]?.v || "",
-      pdf: row.c[10]?.v || ""   // ✅ nouvelle colonne pour PDF
+      pdf: row.c[10]?.v || "",
+      imageOriginal: row.c[11]?.v || ""   // colonne L
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -432,6 +434,7 @@ const lightboxImg = document.getElementById('lightboxImg');
 const closeLightboxBtn = document.getElementById('closeLightbox');
 const btnZoom = document.getElementById('btnZoom');
 const btnPdf = document.getElementById('btnPdf');
+const btnImg = document.getElementById('btnImg');
 
 // Ouvrir une carte
 document.getElementById('cards').addEventListener('click', function(e) {
@@ -444,16 +447,27 @@ document.getElementById('cards').addEventListener('click', function(e) {
   lightbox.style.display = 'flex';
   lightbox.setAttribute('aria-hidden', 'false');
 
-  // Trouver la carte associée
   const setName = card.dataset.set;
   const cardData = allCards.find(c => c.nomSet === setName);
 
-  if (cardData && cardData.pdf) {
-    btnPdf.style.display = "inline-block";
-    btnPdf.dataset.url = cardData.pdf;
-  } else {
-    btnPdf.style.display = "none";
-    btnPdf.dataset.url = "";
+  if (cardData) {
+    // PDF
+    if (cardData.pdf) {
+      btnPdf.style.display = "inline-block";
+      btnPdf.dataset.url = cardData.pdf;
+    } else {
+      btnPdf.style.display = "none";
+      btnPdf.dataset.url = "";
+    }
+
+    // Image originale (colonne L)
+    if (cardData.imageOriginal) {
+      btnImg.style.display = "inline-block";
+      btnImg.dataset.url = cardData.imageOriginal;
+    } else {
+      btnImg.style.display = "none";
+      btnImg.dataset.url = "";
+    }
   }
 });
 
@@ -469,6 +483,12 @@ btnZoom.addEventListener('click', () => {
 // Bouton ouvrir PDF
 btnPdf.addEventListener('click', () => {
   const url = btnPdf.dataset.url;
+  if (url) window.open(url, '_blank');
+});
+
+// Bouton ouvrir image originale
+btnImg.addEventListener('click', () => {
+  const url = btnImg.dataset.url;
   if (url) window.open(url, '_blank');
 });
 
