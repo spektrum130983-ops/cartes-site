@@ -4,225 +4,8 @@
 <meta charset="UTF-8">
 <title>Ma Collection de Boosters</title>
 <style>
-/* Polices */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* ... mêmes styles que ton fichier précédent ... */
 
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #ffe4e1; /* couleur pastel manga */
-  color: #333;
-}
-
-header {
-  text-align: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  color: white;
-  border-bottom: 4px solid #f8cdda;
-}
-
-header img {
-  max-width: 150px;
-  border: 3px solid white;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-h1 {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 1.5em;
-  margin: 10px 0 0 0;
-  text-shadow: 2px 2px #ffb6c1;
-}
-
-#controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px auto;
-  max-width: 1200px;
-}
-
-#controls input, #controls select, #controls button {
-  padding: 8px;
-  font-size: 0.9em;
-  border-radius: 10px;
-  border: 2px solid #ffb6c1;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-#controls input:focus, #controls select:focus {
-  border-color: #ff69b4;
-}
-
-#controls button {
-  background: #ff69b4;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#controls button:hover {
-  background: #ff1493;
-}
-
-#seriesButtons {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-#seriesButtons button {
-  margin: 2px;
-  padding: 5px 10px;
-  font-size: 0.8em;
-  border-radius: 10px;
-  border: 2px solid #ff69b4;
-  background: #fff0f5;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#seriesButtons button.active, #seriesButtons button:hover {
-  background: #ff69b4;
-  color: white;
-  font-weight: bold;
-  transform: scale(1.05);
-}
-
-#counter {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 1em;
-}
-
-#cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin: 0 auto 40px auto;
-  max-width: 1200px;
-}
-
-.card {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  border-radius: 15px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-  border: 3px solid #ffb6c1;
-  background: #fff0f5;
-}
-
-.card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  transform: translateY(-5px);
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.card:hover img {
-  opacity: 0;
-}
-
-.card .info {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  background: rgba(255, 228, 225, 0.95);
-  opacity: 0;
-  overflow-y: auto;
-  transition: opacity 0.3s ease;
-  font-size: 0.85em;
-}
-
-.card:hover .info {
-  opacity: 1;
-}
-
-.card h3 {
-  margin: 0 0 5px;
-  font-size: 1em;
-  color: #ff1493;
-  text-shadow: 1px 1px #fff;
-}
-
-.card p {
-  margin: 2px 0;
-  color: #333;
-  line-height: 1.2em;
-}
-
-/* Scrollbar manga style */
-.card .info::-webkit-scrollbar {
-  width: 8px;
-}
-
-.card .info::-webkit-scrollbar-track {
-  background: #ffe4e1;
-  border-radius: 10px;
-}
-
-.card .info::-webkit-scrollbar-thumb {
-  background: #ff69b4;
-  border-radius: 10px;
-}
-
-/* === Lightbox === */
-#lightbox {
-  display: none; /* Caché par défaut */
-  position: fixed;
-  z-index: 9999;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85);
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-#lightbox img {
-  max-width: 90%;
-  max-height: 80%;
-  border-radius: 15px;
-  box-shadow: 0 0 25px rgba(255,255,255,0.8);
-  animation: zoomIn 0.25s ease;
-}
-
-#closeLightbox {
-  position: absolute;
-  top: 20px;
-  right: 40px;
-  font-size: 40px;
-  font-weight: bold;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-  user-select: none;
-}
-
-#closeLightbox:hover {
-  color: #ff69b4;
-}
-
-/* Boutons lightbox */
 #lightboxButtons {
   margin-top: 20px;
   display: flex;
@@ -231,31 +14,30 @@ h1 {
 
 #lightboxButtons button {
   padding: 10px 15px;
-  border: none;
   border-radius: 10px;
-  background: #ff69b4;
-  color: white;
-  font-size: 0.9em;
+  border: none;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: 0.3s;
 }
 
-#lightboxButtons button:hover {
-  background: #ff1493;
-  transform: scale(1.1);
+#btnZoom {
+  background: #ff69b4;
+  color: white;
 }
+#btnZoom:hover { background: #ff1493; }
 
-@keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+#btnPdf {
+  background: #1d2b64;
+  color: white;
 }
+#btnPdf:hover { background: #000080; }
 
-/* Responsive small screens */
-@media (max-width: 480px) {
-  #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
-  .card { height: 260px; }
+#btnExemple {
+  background: #28a745;
+  color: white;
 }
+#btnExemple:hover { background: #1e7e34; }
 </style>
 </head>
 <body>
@@ -285,7 +67,8 @@ h1 {
   <img id="lightboxImg" src="" alt="Image en grand">
   <div id="lightboxButtons">
     <button id="btnZoom">🔍 Agrandir</button>
-    <button id="btnPdf">📄 Ouvrir PDF</button>
+    <button id="btnPdf" style="display:none;">📄 Ouvrir PDF</button>
+    <button id="btnExemple" style="display:none;">🖼️ Exemple Carte</button>
   </div>
 </div>
 
@@ -302,15 +85,16 @@ fetch(sheetURL)
       nomSet: row.c[1]?.v || "",
       booster: row.c[2]?.v || "",
       annee: row.c[3]?.f 
-          ? new Date(row.c[3].f).getFullYear().toString()
-          : (row.c[3]?.v ? row.c[3].v.toString() : ""),
+            ? new Date(row.c[3].f).getFullYear().toString()
+            : (row.c[3]?.v ? row.c[3].v.toString() : ""),
       date: row.c[4]?.f || "",
       langue: row.c[5]?.v || "",
       type: row.c[6]?.v || "",
       nombre: row.c[7]?.f || "",
       code: row.c[8]?.v || "",
       image: row.c[9]?.v || "",
-      pdf: row.c[10]?.v || ""   // ✅ nouvelle colonne pour PDF
+      pdf: row.c[10]?.v || "",     // ✅ Colonne K
+      exemple: row.c[11]?.v || ""  // ✅ Colonne L
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -318,7 +102,6 @@ fetch(sheetURL)
     fillFilter("filterBooster", allCards.map(c => c.booster));
     fillFilter("filterLangue", allCards.map(c => c.langue));
     fillFilter("filterAnnee", allCards.map(c => c.annee));
-
     createSeriesButtons();
     renderCards();
   })
@@ -330,13 +113,11 @@ fetch(sheetURL)
 function fillFilter(selectId, values) {
   const select = document.getElementById(selectId);
   let unique = [...new Set(values.filter(v => v))];
-
   if (selectId === "filterAnnee") {
     unique = unique.sort((a, b) => parseInt(a) - parseInt(b));
   } else {
     unique = unique.sort();
   }
-
   unique.forEach(v => {
     const option = document.createElement("option");
     option.value = v;
@@ -372,7 +153,7 @@ function renderCardsBySerie(serieName) {
 function renderCardHTML(c) {
   const imgSrc = c.image ? c.image : "https://via.placeholder.com/400x600?text=Pas+d'image";
   return `
-    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-set="${c.nomSet}">
+    <div class="card" data-set="${c.nomSet}" role="button" aria-label="Ouvrir ${c.nomSet}">
       <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
       <div class="info">
         <h3>${c.nomSet}</h3>
@@ -432,8 +213,8 @@ const lightboxImg = document.getElementById('lightboxImg');
 const closeLightboxBtn = document.getElementById('closeLightbox');
 const btnZoom = document.getElementById('btnZoom');
 const btnPdf = document.getElementById('btnPdf');
+const btnExemple = document.getElementById('btnExemple');
 
-// Ouvrir une carte
 document.getElementById('cards').addEventListener('click', function(e) {
   const card = e.target.closest('.card');
   if (!card) return;
@@ -444,10 +225,10 @@ document.getElementById('cards').addEventListener('click', function(e) {
   lightbox.style.display = 'flex';
   lightbox.setAttribute('aria-hidden', 'false');
 
-  // Trouver la carte associée
   const setName = card.dataset.set;
   const cardData = allCards.find(c => c.nomSet === setName);
 
+  // PDF
   if (cardData && cardData.pdf) {
     btnPdf.style.display = "inline-block";
     btnPdf.dataset.url = cardData.pdf;
@@ -455,28 +236,41 @@ document.getElementById('cards').addEventListener('click', function(e) {
     btnPdf.style.display = "none";
     btnPdf.dataset.url = "";
   }
-});
 
-// Bouton agrandir
-btnZoom.addEventListener('click', () => {
-  if (lightboxImg.requestFullscreen) {
-    lightboxImg.requestFullscreen();
-  } else if (lightboxImg.webkitRequestFullscreen) {
-    lightboxImg.webkitRequestFullscreen();
+  // Exemple
+  if (cardData && cardData.exemple) {
+    btnExemple.style.display = "inline-block";
+    btnExemple.dataset.url = cardData.exemple;
+  } else {
+    btnExemple.style.display = "none";
+    btnExemple.dataset.url = "";
   }
 });
 
-// Bouton ouvrir PDF
-btnPdf.addEventListener('click', () => {
-  const url = btnPdf.dataset.url;
-  if (url) window.open(url, '_blank');
-});
-
-// Fermer lightbox
 closeLightboxBtn.addEventListener('click', () => {
   lightbox.style.display = 'none';
   lightbox.setAttribute('aria-hidden', 'true');
   lightboxImg.src = '';
+});
+
+btnZoom.addEventListener('click', () => {
+  if (lightboxImg.requestFullscreen) {
+    lightboxImg.requestFullscreen();
+  }
+});
+
+btnPdf.addEventListener('click', () => {
+  const url = btnPdf.dataset.url;
+  if (url) {
+    window.open(url, '_blank');
+  }
+});
+
+btnExemple.addEventListener('click', () => {
+  const url = btnExemple.dataset.url;
+  if (url) {
+    window.open(url, '_blank');
+  }
 });
 
 lightbox.addEventListener('click', e => {
