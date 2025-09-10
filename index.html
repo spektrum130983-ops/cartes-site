@@ -195,11 +195,12 @@ h1 {
   background: rgba(0,0,0,0.85);
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 
 #lightbox img {
   max-width: 90%;
-  max-height: 90%;
+  max-height: 80%;
   border-radius: 15px;
   box-shadow: 0 0 25px rgba(255,255,255,0.8);
   animation: zoomIn 0.25s ease;
@@ -219,6 +220,30 @@ h1 {
 
 #closeLightbox:hover {
   color: #ff69b4;
+}
+
+/* Boutons lightbox */
+#lightboxButtons {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+#lightboxButtons button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: #ff69b4;
+  color: white;
+  font-size: 0.9em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#lightboxButtons button:hover {
+  background: #ff1493;
+  transform: scale(1.1);
 }
 
 @keyframes zoomIn {
@@ -258,10 +283,13 @@ h1 {
 <div id="lightbox" aria-hidden="true" role="dialog">
   <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
   <img id="lightboxImg" src="" alt="Image en grand">
+  <div id="lightboxButtons">
+    <button id="btnZoom">🔍 Agrandir</button>
+    <button id="btnPdf">📄 Ouvrir PDF</button>
+  </div>
 </div>
 
 <script>
-// === Script inchangé pour les données, filtres et boutons de série ===
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 let allCards = [];
 
@@ -273,15 +301,16 @@ fetch(sheetURL)
       serie: row.c[0]?.v || "",
       nomSet: row.c[1]?.v || "",
       booster: row.c[2]?.v || "",
-     annee: row.c[3]?.f 
-          ? new Date(row.c[3].f).getFullYear().toString()   // si format date → extraire l'année
-          : (row.c[3]?.v ? row.c[3].v.toString() : ""),     // sinon garder tel quel
+      annee: row.c[3]?.f 
+          ? new Date(row.c[3].f).getFullYear().toString()
+          : (row.c[3]?.v ? row.c[3].v.toString() : ""),
       date: row.c[4]?.f || "",
       langue: row.c[5]?.v || "",
       type: row.c[6]?.v || "",
       nombre: row.c[7]?.f || "",
       code: row.c[8]?.v || "",
-      image: row.c[9]?.v || ""
+      image: row.c[9]?.v || "",
+      pdf: row.c[10]?.v || ""   // ✅ nouvelle colonne pour PDF
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -289,8 +318,6 @@ fetch(sheetURL)
     fillFilter("filterBooster", allCards.map(c => c.booster));
     fillFilter("filterLangue", allCards.map(c => c.langue));
     fillFilter("filterAnnee", allCards.map(c => c.annee));
-
-    
 
     createSeriesButtons();
     renderCards();
@@ -304,7 +331,6 @@ function fillFilter(selectId, values) {
   const select = document.getElementById(selectId);
   let unique = [...new Set(values.filter(v => v))];
 
-  // Si c'est pour les années, on trie numériquement
   if (selectId === "filterAnnee") {
     unique = unique.sort((a, b) => parseInt(a) - parseInt(b));
   } else {
@@ -318,7 +344,6 @@ function fillFilter(selectId, values) {
     select.appendChild(option);
   });
 }
-
 
 function createSeriesButtons() {
   const container = document.getElementById("seriesButtons");
@@ -347,7 +372,7 @@ function renderCardsBySerie(serieName) {
 function renderCardHTML(c) {
   const imgSrc = c.image ? c.image : "https://via.placeholder.com/400x600?text=Pas+d'image";
   return `
-    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}">
+    <div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-set="${c.nomSet}">
       <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
       <div class="info">
         <h3>${c.nomSet}</h3>
@@ -405,26 +430,55 @@ function renderCards() {
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const closeLightboxBtn = document.getElementById('closeLightbox');
+const btnZoom = document.getElementById('btnZoom');
+const btnPdf = document.getElementById('btnPdf');
 
-// Delegation: clique sur une .card -> ouvre la lightbox avec l'image correspondante
+// Ouvrir une carte
 document.getElementById('cards').addEventListener('click', function(e) {
   const card = e.target.closest('.card');
   if (!card) return;
   const img = card.querySelector('img');
   if (!img || !img.src) return;
+
   lightboxImg.src = img.src;
   lightbox.style.display = 'flex';
   lightbox.setAttribute('aria-hidden', 'false');
+
+  // Trouver la carte associée
+  const setName = card.dataset.set;
+  const cardData = allCards.find(c => c.nomSet === setName);
+
+  if (cardData && cardData.pdf) {
+    btnPdf.style.display = "inline-block";
+    btnPdf.dataset.url = cardData.pdf;
+  } else {
+    btnPdf.style.display = "none";
+    btnPdf.dataset.url = "";
+  }
 });
 
-// Fermer avec la croix
+// Bouton agrandir
+btnZoom.addEventListener('click', () => {
+  if (lightboxImg.requestFullscreen) {
+    lightboxImg.requestFullscreen();
+  } else if (lightboxImg.webkitRequestFullscreen) {
+    lightboxImg.webkitRequestFullscreen();
+  }
+});
+
+// Bouton ouvrir PDF
+btnPdf.addEventListener('click', () => {
+  const url = btnPdf.dataset.url;
+  if (url) window.open(url, '_blank');
+});
+
+// Fermer lightbox
 closeLightboxBtn.addEventListener('click', () => {
   lightbox.style.display = 'none';
   lightbox.setAttribute('aria-hidden', 'true');
   lightboxImg.src = '';
 });
 
-// Fermer si on clique à l'extérieur de l'image (sur le fond)
 lightbox.addEventListener('click', e => {
   if (e.target === lightbox) {
     lightbox.style.display = 'none';
@@ -433,7 +487,6 @@ lightbox.addEventListener('click', e => {
   }
 });
 
-// Fermer avec la touche ESC
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && lightbox.style.display === 'flex') {
     lightbox.style.display = 'none';
