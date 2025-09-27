@@ -49,9 +49,46 @@ canvas {
   text-align: center;
   font-weight: bold;
 }
+/* === Navbar === */
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#navbar a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#navbar a:hover {
+  background: rgba(255,105,180,0.7);
+  transform: scale(1.05);
+}
+
+body {
+  padding-top: 60px; /* pour éviter que le contenu passe sous la navbar */
+}
+
 </style>
 </head>
 <body>
+<nav id="navbar">
+  <a href="index.html">📂 Collection</a>
+  <a href="stats.html">📊 Statistiques</a>
+</nav>
 
 <a href="index.html" class="retour">⬅ Retour à la collection</a>
 <h1>📊 Statistiques de ma Collection</h1>
