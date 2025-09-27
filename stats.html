@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Statistiques de ma Collection</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #fff0f5;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+h1 {
+  text-align: center;
+  color: #ff1493;
+}
+#stats-container {
+  max-width: 1200px;
+  margin: auto;
+}
+canvas {
+  margin: 20px 0;
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+#totaux {
+  margin-top: 20px;
+  font-size: 1.2em;
+  text-align: center;
+  font-weight: bold;
+}
+a {
+  display: block;
+  margin: 20px auto;
+  text-align: center;
+  font-size: 1em;
+  text-decoration: none;
+  background: #ff69b4;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  width: 200px;
+}
+a:hover {
+  background: #ff1493;
+}
+</style>
+</head>
+<body>
+
+<h1>📊 Statistiques de ma Collection</h1>
+
+<div id="stats-container">
+  <canvas id="chartPrix"></canvas>
+  <canvas id="chartEvolution"></canvas>
+  <div id="totaux"></div>
+</div>
+
+<a href="index.html">⬅ Retour à la collection</a>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
+
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const cards = json.table.rows.map(row => ({
+      nomSet: row.c[1]?.v || "",
+      prixAchat: parseFloat(row.c[12]?.v || 0),
+      prixActuel: parseFloat(row.c[13]?.v || 0),
+      serie: row.c[0]?.v || ""
+    }));
+
+    // === Graphique comparaison prix par set ===
+    const labels = cards.map(c => c.nomSet);
+    const prixAchat = cards.map(c => c.prixAchat);
+    const prixActuel = cards.map(c => c.prixActuel);
+
+    new Chart(document.getElementById("chartPrix"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: "Prix d'achat", data: prixAchat, backgroundColor: "rgba(255,105,180,0.6)" },
+          { label: "Prix actuel", data: prixActuel, backgroundColor: "rgba(100,149,237,0.6)" }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: { display: true, text: "Comparaison Prix d'achat vs Prix actuel par Set" }
+        }
+      }
+    });
+
+    // === Graphique évolution totale ===
+    const totalAchat = prixAchat.reduce((a,b)=>a+b,0);
+    const totalActuel = prixActuel.reduce((a,b)=>a+b,0);
+    const gain = totalActuel - totalAchat;
+
+    new Chart(document.getElementById("chartEvolution"), {
+      type: "pie",
+      data: {
+        labels: ["Valeur d'achat totale", "Valeur actuelle totale"],
+        datasets: [{
+          data: [totalAchat, totalActuel],
+          backgroundColor: ["rgba(255,182,193,0.7)", "rgba(144,238,144,0.7)"]
+        }]
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: "Évolution de la valeur totale de la collection" }
+        }
+      }
+    });
+
+    // === Résumé ===
+    document.getElementById("totaux").innerHTML = `
+      💰 Valeur d'achat : ${totalAchat.toFixed(2)} €<br>
+      📈 Valeur actuelle : ${totalActuel.toFixed(2)} €<br>
+      ${gain >= 0 ? "🟢 Gain : +" : "🔴 Perte : "} ${gain.toFixed(2)} €
+    `;
+  })
+  .catch(err => console.error("Erreur stats:", err));
+</script>
+
+</body>
+</html>
