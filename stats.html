@@ -15,6 +15,22 @@ body {
 h1 {
   text-align: center;
   color: #ff1493;
+  margin-bottom: 10px;
+}
+a.retour {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 0.95em;
+  text-decoration: none;
+  background: #ff69b4;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+a.retour:hover {
+  background: #ff1493;
+  transform: scale(1.05);
 }
 #stats-container {
   max-width: 1200px;
@@ -33,25 +49,11 @@ canvas {
   text-align: center;
   font-weight: bold;
 }
-a {
-  display: block;
-  margin: 20px auto;
-  text-align: center;
-  font-size: 1em;
-  text-decoration: none;
-  background: #ff69b4;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  width: 200px;
-}
-a:hover {
-  background: #ff1493;
-}
 </style>
 </head>
 <body>
 
+<a href="index.html" class="retour">⬅ Retour à la collection</a>
 <h1>📊 Statistiques de ma Collection</h1>
 
 <div id="stats-container">
@@ -59,8 +61,6 @@ a:hover {
   <canvas id="chartEvolution"></canvas>
   <div id="totaux"></div>
 </div>
-
-<a href="index.html">⬅ Retour à la collection</a>
 
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
