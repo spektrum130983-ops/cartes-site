@@ -70,6 +70,14 @@ h1 {
   background: #ff1493;
 }
 
+/* Indication filtre actif */
+#controls select.activeFilter, 
+#controls input.activeFilter {
+  border-color: #ff1493;
+  background: #fff0f5;
+  box-shadow: 0 0 8px rgba(255,105,180,0.5);
+}
+
 #seriesButtons {
   text-align: center;
   margin-bottom: 10px;
@@ -138,6 +146,7 @@ h1 {
   opacity: 0;
 }
 
+/* Effet slide/fondu sur infos */
 .card .info {
   position: absolute;
   top: 0;
@@ -149,12 +158,14 @@ h1 {
   background: rgba(255, 228, 225, 0.95);
   opacity: 0;
   overflow-y: auto;
-  transition: opacity 0.3s ease;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
   font-size: 0.85em;
 }
 
 .card:hover .info {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .card h3 {
@@ -226,6 +237,8 @@ h1 {
   margin-top: 20px;
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 #lightboxButtons button {
@@ -278,10 +291,12 @@ h1 {
 <div id="cards">Chargement…</div>
 
 <!-- Lightbox -->
-<div id="lightbox" aria-hidden="true" role="dialog">
+<div id="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
   <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
   <img id="lightboxImg" src="" alt="Image en grand">
   <div id="lightboxButtons">
+    <button id="btnPrev">⬅ Précédent</button>
+    <button id="btnNext">➡ Suivant</button>
     <button id="btnZoom">🔍 Agrandir</button>
     <button id="btnPdf">📄 Ouvrir PDF</button>
     <button id="btnImg">👁 Voir carte</button>
@@ -308,7 +323,9 @@ fetch(sheetURL)
       code: row.c[8]?.v || "",
       image: row.c[9]?.v || "",
       pdf: row.c[10]?.v || "",
-      imageOriginal: row.c[11]?.v || "" // colonne L
+      imageOriginal: row.c[11]?.v || "",
+      prixAchat: row.c[12]?.v || "",
+      prixActuel: row.c[13]?.v || ""
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -337,6 +354,16 @@ function createSeriesButtons() {
   const container = document.getElementById("seriesButtons");
   container.innerHTML = "";
   const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
+  // bouton Tous
+  const allBtn = document.createElement("button");
+  allBtn.textContent = "Toutes";
+  allBtn.addEventListener("click", ()=>{
+    container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    allBtn.classList.add("active");
+    renderCards();
+  });
+  container.appendChild(allBtn);
+
   series.forEach(s => {
     const btn = document.createElement("button");
     btn.textContent = s;
@@ -351,7 +378,8 @@ function createSeriesButtons() {
 
 function renderCardsBySerie(serieName) {
   const filtered = allCards.filter(c => c.serie === serieName);
-  document.getElementById("counter").textContent = `Cartes dans la série "${serieName}" : ${filtered.length}`;
+  const total = allCards.length;
+  document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
   container.innerHTML = filtered.length ? filtered.map(c => renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
 }
@@ -367,14 +395,24 @@ function renderCardHTML(c) {
       <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
       <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
       <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
+      <p><b>Prix d'achat :</b> ${c.prixAchat} | <b>Prix actuel :</b> ${c.prixActuel}</p>
     </div>
   </div>`;
 }
 
-["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => document.getElementById(id).addEventListener("input", renderCards));
+// === Filtres ===
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
+  document.getElementById(id).addEventListener("input", e=>{
+    e.target.classList.toggle("activeFilter", e.target.value !== "");
+    renderCards();
+  });
+});
 
 document.getElementById("resetFilters").addEventListener("click", () => {
-  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>document.getElementById(id).value="");
+  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
+    document.getElementById(id).value="";
+    document.getElementById(id).classList.remove("activeFilter");
+  });
   document.querySelectorAll("#seriesButtons button").forEach(b=>b.classList.remove("active"));
   renderCards();
 });
@@ -388,7 +426,7 @@ function getFilteredCards() {
   const anneeFilter = document.getElementById("filterAnnee").value;
 
   return allCards.filter(c=>{
-    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code];
+    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
     const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
     return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) && (typeFilter?c.type===typeFilter:true) &&
            (boosterFilter?c.booster===boosterFilter:true) && (langueFilter?c.langue===langueFilter:true) &&
@@ -398,7 +436,8 @@ function getFilteredCards() {
 
 function renderCards() {
   const filtered = getFilteredCards();
-  document.getElementById("counter").textContent = `Boosters : ${filtered.length}`;
+  const total = allCards.length;
+  document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
   container.innerHTML = filtered.length ? filtered.map(c=>renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
 }
@@ -411,50 +450,64 @@ const btnZoom = document.getElementById('btnZoom');
 const btnPdf = document.getElementById('btnPdf');
 const btnImg = document.getElementById('btnImg');
 
-document.getElementById('cards').addEventListener('click', function(e) {
-  const card = e.target.closest('.card');
-  if(!card) return;
-  const img = card.querySelector('img');
-  if(!img || !img.src) return;
+let currentIndex = -1;
 
-  lightboxImg.src = img.src;
+function openLightbox(index) {
+  const cards = getFilteredCards();
+  const c = cards[index];
+  if (!c) return;
+  currentIndex = index;
+  lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
   lightbox.style.display = 'flex';
   lightbox.setAttribute('aria-hidden','false');
 
-  const setName = card.dataset.set;
-  const cardData = allCards.find(c => c.nomSet===setName);
+  if(c.pdf){ btnPdf.style.display="inline-block"; btnPdf.dataset.url=c.pdf; }
+  else { btnPdf.style.display="none"; }
 
-  if(cardData){
-    if(cardData.pdf){ btnPdf.style.display="inline-block"; btnPdf.dataset.url=cardData.pdf; }
-    else { btnPdf.style.display="none"; btnPdf.dataset.url=""; }
+  if(c.imageOriginal){ btnImg.style.display="inline-block"; btnImg.dataset.url=c.imageOriginal; }
+  else { btnImg.style.display="none"; }
+}
 
-    if(cardData.imageOriginal){ btnImg.style.display="inline-block"; btnImg.dataset.url=cardData.imageOriginal; }
-    else { btnImg.style.display="none"; btnImg.dataset.url=""; }
+function closeLightbox() {
+  lightbox.style.display = 'none';
+  lightbox.setAttribute('aria-hidden','true');
+  lightboxImg.src="";
+}
+
+function showPrev() {
+  const cards=getFilteredCards();
+  if(cards.length===0)return;
+  currentIndex=(currentIndex-1+cards.length)%cards.length;
+  openLightbox(currentIndex);
+}
+function showNext() {
+  const cards=getFilteredCards();
+  if(cards.length===0)return;
+  currentIndex=(currentIndex+1)%cards.length;
+  openLightbox(currentIndex);
+}
+
+document.getElementById("cards").addEventListener("click", e=>{
+  const card=e.target.closest(".card");
+  if(!card)return;
+  const cards=getFilteredCards();
+  const index=cards.findIndex(c=>c.nomSet===card.dataset.set);
+  if(index>=0)openLightbox(index);
+});
+closeLightboxBtn.addEventListener("click", closeLightbox);
+document.getElementById("btnPrev").addEventListener("click", showPrev);
+document.getElementById("btnNext").addEventListener("click", showNext);
+
+btnZoom.addEventListener("click", ()=>{window.open(lightboxImg.src,"_blank");});
+btnPdf.addEventListener("click", ()=>{window.open(btnPdf.dataset.url,"_blank");});
+btnImg.addEventListener("click", ()=>{window.open(btnImg.dataset.url,"_blank");});
+
+window.addEventListener("keydown", e=>{
+  if(lightbox.style.display==="flex"){
+    if(e.key==="Escape")closeLightbox();
+    if(e.key==="ArrowLeft")showPrev();
+    if(e.key==="ArrowRight")showNext();
   }
-});
-
-btnZoom.addEventListener('click', ()=>{ if(lightboxImg.requestFullscreen) lightboxImg.requestFullscreen(); else if(lightboxImg.webkitRequestFullscreen) lightboxImg.webkitRequestFullscreen(); });
-btnPdf.addEventListener('click', ()=>{ const url=btnPdf.dataset.url; if(url) window.open(url,'_blank'); });
-btnImg.addEventListener('click', ()=>{
-  const url=btnImg.dataset.url;
-  if(url){
-    const width=800; const height=600;
-    const left=(screen.width/2)-(width/2);
-    const top=(screen.height/2)-(height/2);
-    window.open(url,'VoirCarte',`width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
-  }
-});
-
-closeLightboxBtn.addEventListener('click', ()=>{
-  lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src='';
-});
-
-lightbox.addEventListener('click', e=>{
-  if(e.target===lightbox){ lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src=''; }
-});
-
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape' && lightbox.style.display==='flex'){ lightbox.style.display='none'; lightbox.setAttribute('aria-hidden','true'); lightboxImg.src=''; }
 });
 </script>
 </body>
