@@ -12,7 +12,7 @@ body {
   padding: 80px 20px 20px 20px; /* espace pour navbar */
   color: #333;
 }
-h1 {
+h1, h2 {
   text-align: center;
   color: #ff1493;
   margin-bottom: 20px;
@@ -85,7 +85,7 @@ h1 {
   white-space: nowrap;
 }
 
-/* Graphiques plus petits et organisés */
+/* Graphiques */
 #charts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -98,6 +98,42 @@ canvas {
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Tableau par série */
+#statsSeries {
+  max-width: 1000px;
+  margin: 20px auto;
+  overflow-x: auto;
+}
+#statsSeries table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+#statsSeries th, #statsSeries td {
+  padding: 10px 15px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+#statsSeries th {
+  background: #ff69b4;
+  color: white;
+  font-weight: bold;
+}
+#statsSeries tr:hover {
+  background: #fff0f5;
+}
+.gain {
+  color: green;
+  font-weight: bold;
+}
+.perte {
+  color: red;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -137,6 +173,10 @@ canvas {
   <canvas id="chartEvolution"></canvas>
 </div>
 
+<!-- Tableau par série -->
+<h2>📂 Statistiques par Série</h2>
+<div id="statsSeries"></div>
+
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
@@ -150,67 +190,77 @@ fetch(sheetURL)
       prixActuel: parseFloat(row.c[13]?.v || 0)
     }));
 
-    // === Compléter prix manquants ===
-    const achatsConnus = cards.filter(c => c.prixAchat > 0).map(c => c.prixAchat);
-    const moyenneAchat = achatsConnus.length ? (achatsConnus.reduce((a,b)=>a+b,0) / achatsConnus.length) : 0;
-
+    // Compléter prix manquants
+    const achatsConnus = cards.filter(c => c.prixAchat>0).map(c=>c.prixAchat);
+    const moyenneAchat = achatsConnus.length ? (achatsConnus.reduce((a,b)=>a+b,0)/achatsConnus.length) : 0;
     cards = cards.map(c => {
-      let prixAchat = c.prixAchat > 0 ? c.prixAchat : moyenneAchat;
-      let prixActuel = c.prixActuel > 0 ? c.prixActuel : prixAchat;
-      return { ...c, prixAchat, prixActuel };
+      let prixAchat = c.prixAchat>0 ? c.prixAchat : moyenneAchat;
+      let prixActuel = c.prixActuel>0 ? c.prixActuel : prixAchat;
+      return {...c, prixAchat, prixActuel};
     });
 
-    // === Totaux ===
+    // Totaux
     const totalAchat = cards.reduce((a,b)=>a+b.prixAchat,0);
     const totalActuel = cards.reduce((a,b)=>a+b.prixActuel,0);
     const gain = totalActuel - totalAchat;
-
-    // === Simulation théorique ===
     const totalTheorique = cards.reduce((a,b)=>a+b.prixActuel,0);
 
     // Affichage chiffres
     document.querySelector("#statAchat span").textContent = totalAchat.toFixed(2)+" €";
     document.querySelector("#statActuel span").textContent = totalActuel.toFixed(2)+" €";
-    document.querySelector("#statGain span").textContent = (gain >= 0 ? "+" : "")+gain.toFixed(2)+" €";
-    document.querySelector("#statGain span").style.color = gain >= 0 ? "green" : "red";
+    document.querySelector("#statGain span").textContent = (gain>=0?"+":"")+gain.toFixed(2)+" €";
+    document.querySelector("#statGain span").style.color = gain>=0?"green":"red";
     document.querySelector("#statTheorique span").textContent = totalTheorique.toFixed(2)+" €";
 
-    // === Graphique comparaison prix par set ===
+    // Graphique comparaison prix par set
     new Chart(document.getElementById("chartPrix"), {
       type: "bar",
       data: {
-        labels: cards.map(c => c.nomSet),
-        datasets: [
-          { label: "Prix d'achat", data: cards.map(c => c.prixAchat), backgroundColor: "rgba(255,105,180,0.6)" },
-          { label: "Prix actuel", data: cards.map(c => c.prixActuel), backgroundColor: "rgba(100,149,237,0.6)" }
+        labels: cards.map(c=>c.nomSet),
+        datasets:[
+          {label:"Prix d'achat", data: cards.map(c=>c.prixAchat), backgroundColor:"rgba(255,105,180,0.6)"},
+          {label:"Prix actuel", data: cards.map(c=>c.prixActuel), backgroundColor:"rgba(100,149,237,0.6)"}
         ]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: "top" },
-          title: { display: true, text: "Comparaison Prix d'achat vs Prix actuel par Set" }
-        },
-        scales: { y: { beginAtZero: true } }
+      options:{
+        responsive:true,
+        plugins:{legend:{position:"top"}, title:{display:true,text:"Comparaison Prix d'achat vs Prix actuel par Set"}},
+        scales:{y:{beginAtZero:true}}
       }
     });
 
-    // === Graphique évolution ===
-    new Chart(document.getElementById("chartEvolution"), {
-      type: "doughnut",
-      data: {
-        labels: ["Valeur d'achat totale", "Valeur actuelle totale"],
-        datasets: [{
-          data: [totalAchat, totalActuel],
-          backgroundColor: ["rgba(255,182,193,0.7)", "rgba(144,238,144,0.7)"]
-        }]
+    // Graphique évolution
+    new Chart(document.getElementById("chartEvolution"),{
+      type:"doughnut",
+      data:{
+        labels:["Valeur d'achat totale","Valeur actuelle totale"],
+        datasets:[{data:[totalAchat,totalActuel], backgroundColor:["rgba(255,182,193,0.7)","rgba(144,238,144,0.7)"]}]
       },
-      options: {
-        plugins: {
-          title: { display: true, text: "Évolution de la valeur totale" }
-        }
-      }
+      options:{plugins:{title:{display:true,text:"Évolution de la valeur totale"}}}
     });
+
+    // Statistiques par série
+    const seriesData = {};
+    cards.forEach(c => {
+      if(!seriesData[c.nomSet]) seriesData[c.nomSet]={achat:0,actuel:0};
+      seriesData[c.nomSet].achat+=c.prixAchat;
+      seriesData[c.nomSet].actuel+=c.prixActuel;
+    });
+    let html = `<table>
+      <thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead>
+      <tbody>`;
+    Object.entries(seriesData).forEach(([serie,vals])=>{
+      const g = vals.actuel - vals.achat;
+      html += `<tr>
+        <td>${serie}</td>
+        <td>${vals.achat.toFixed(2)}</td>
+        <td>${vals.actuel.toFixed(2)}</td>
+        <td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    document.getElementById("statsSeries").innerHTML = html;
+
   })
   .catch(err => console.error("Erreur stats:", err));
 </script>
