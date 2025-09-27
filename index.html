@@ -267,6 +267,23 @@ h1 {
   #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
   .card { height: 260px; }
 }
+#btnStats {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 15px;
+  font-size: 0.9em;
+  border-radius: 10px;
+  border: 2px solid #ffb6c1;
+  background: #ff69b4;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+#btnStats:hover {
+  background: #ff1493;
+  transform: scale(1.05);
+}
+
 </style>
 </head>
 <body>
@@ -284,7 +301,11 @@ h1 {
   <select id="filterLangue"><option value="">Toutes les langues</option></select>
   <select id="filterAnnee"><option value="">Toutes les années</option></select>
   <button id="resetFilters">Réinitialiser</button>
+
+  <!-- 🚀 Nouveau bouton Statistiques -->
+  <a href="stats.html" id="btnStats">📊 Statistiques</a>
 </div>
+
 
 <div id="seriesButtons"></div>
 <div id="counter"></div>
@@ -512,3 +533,4 @@ window.addEventListener("keydown", e=>{
 </script>
 </body>
 </html>
+
