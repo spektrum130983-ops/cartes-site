@@ -70,7 +70,7 @@ h1, h2 {
   margin-top: 5px;
 }
 
-/* Tooltip explicatif */
+/* Tooltip */
 .stat-card[data-tooltip]:hover::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -101,12 +101,12 @@ canvas {
 }
 
 /* Tableau par série */
-#statsSeries {
+#statsSeries, #statsSimules {
   max-width: 1000px;
   margin: 20px auto;
   overflow-x: auto;
 }
-#statsSeries table {
+table {
   width: 100%;
   border-collapse: collapse;
   background: white;
@@ -114,17 +114,17 @@ canvas {
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-#statsSeries th, #statsSeries td {
+th, td {
   padding: 10px 15px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }
-#statsSeries th {
+th {
   background: #ff69b4;
   color: white;
   font-weight: bold;
 }
-#statsSeries tr:hover {
+tr:hover {
   background: #fff0f5;
 }
 .gain {
@@ -149,20 +149,16 @@ canvas {
 
 <!-- Chiffres clés -->
 <div id="totaux">
-  <div class="stat-card" id="statAchat" data-tooltip="Somme de tous les prix d'achat (colonne M).">
+  <div class="stat-card" id="statAchat" data-tooltip="Somme des prix d'achat réels (colonne M).">
     Valeur d'achat totale
     <span>0 €</span>
   </div>
-  <div class="stat-card" id="statActuel" data-tooltip="Somme de tous les prix actuels (colonne N). Si non renseigné → prix d'achat.">
+  <div class="stat-card" id="statActuel" data-tooltip="Somme des prix actuels réels (colonne N).">
     Valeur actuelle totale
     <span>0 €</span>
   </div>
   <div class="stat-card" id="statGain" data-tooltip="Différence entre valeur actuelle et valeur d'achat.">
     Gain / Perte
-    <span>0 €</span>
-  </div>
-  <div class="stat-card" id="statTheorique" data-tooltip="Simulation : si les prix manquants sont complétés par la moyenne des prix connus.">
-    Valeur théorique
     <span>0 €</span>
   </div>
 </div>
@@ -173,97 +169,109 @@ canvas {
   <canvas id="chartEvolution"></canvas>
 </div>
 
-<!-- Tableau par série -->
-<h2>📂 Statistiques par Série</h2>
+<!-- Tableau par série réelle -->
+<h2>📂 Statistiques par Série (réelles)</h2>
 <div id="statsSeries"></div>
+
+<!-- Section amusons-nous (simulation) -->
+<h2>🎲 Amusons-nous (simulation prix manquants)</h2>
+<div id="statsSimules"></div>
 
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
 fetch(sheetURL)
-  .then(res => res.text())
-  .then(text => {
+.then(res => res.text())
+.then(text => {
     const json = JSON.parse(text.substr(47).slice(0, -2));
     let cards = json.table.rows.map(row => ({
-      nomSet: row.c[1]?.v || "",
-      prixAchat: parseFloat(row.c[12]?.v || 0),
-      prixActuel: parseFloat(row.c[13]?.v || 0)
+        serie: row.c[0]?.v || "",
+        nomSet: row.c[1]?.v || "",
+        prixAchat: parseFloat(row.c[12]?.v || 0),
+        prixActuel: parseFloat(row.c[13]?.v || 0)
     }));
 
-    // Compléter prix manquants
-    const achatsConnus = cards.filter(c => c.prixAchat>0).map(c=>c.prixAchat);
-    const moyenneAchat = achatsConnus.length ? (achatsConnus.reduce((a,b)=>a+b,0)/achatsConnus.length) : 0;
-    cards = cards.map(c => {
-      let prixAchat = c.prixAchat>0 ? c.prixAchat : moyenneAchat;
-      let prixActuel = c.prixActuel>0 ? c.prixActuel : prixAchat;
-      return {...c, prixAchat, prixActuel};
-    });
-
-    // Totaux
+    // --- Chiffres clés réels ---
     const totalAchat = cards.reduce((a,b)=>a+b.prixAchat,0);
     const totalActuel = cards.reduce((a,b)=>a+b.prixActuel,0);
     const gain = totalActuel - totalAchat;
-    const totalTheorique = cards.reduce((a,b)=>a+b.prixActuel,0);
 
-    // Affichage chiffres
     document.querySelector("#statAchat span").textContent = totalAchat.toFixed(2)+" €";
     document.querySelector("#statActuel span").textContent = totalActuel.toFixed(2)+" €";
     document.querySelector("#statGain span").textContent = (gain>=0?"+":"")+gain.toFixed(2)+" €";
     document.querySelector("#statGain span").style.color = gain>=0?"green":"red";
-    document.querySelector("#statTheorique span").textContent = totalTheorique.toFixed(2)+" €";
 
-    // Graphique comparaison prix par set
+    // --- Graphiques réels ---
     new Chart(document.getElementById("chartPrix"), {
-      type: "bar",
-      data: {
-        labels: cards.map(c=>c.nomSet),
-        datasets:[
-          {label:"Prix d'achat", data: cards.map(c=>c.prixAchat), backgroundColor:"rgba(255,105,180,0.6)"},
-          {label:"Prix actuel", data: cards.map(c=>c.prixActuel), backgroundColor:"rgba(100,149,237,0.6)"}
-        ]
-      },
-      options:{
-        responsive:true,
-        plugins:{legend:{position:"top"}, title:{display:true,text:"Comparaison Prix d'achat vs Prix actuel par Set"}},
-        scales:{y:{beginAtZero:true}}
-      }
+        type: "bar",
+        data: {
+            labels: cards.map(c=>c.nomSet),
+            datasets:[
+                {label:"Prix d'achat", data: cards.map(c=>c.prixAchat), backgroundColor:"rgba(255,105,180,0.6)"},
+                {label:"Prix actuel", data: cards.map(c=>c.prixActuel), backgroundColor:"rgba(100,149,237,0.6)"}
+            ]
+        },
+        options:{responsive:true,plugins:{legend:{position:"top"}, title:{display:true,text:"Comparaison Prix d'achat vs Prix actuel par Set"}},scales:{y:{beginAtZero:true}}}
     });
 
-    // Graphique évolution
     new Chart(document.getElementById("chartEvolution"),{
-      type:"doughnut",
-      data:{
-        labels:["Valeur d'achat totale","Valeur actuelle totale"],
-        datasets:[{data:[totalAchat,totalActuel], backgroundColor:["rgba(255,182,193,0.7)","rgba(144,238,144,0.7)"]}]
-      },
-      options:{plugins:{title:{display:true,text:"Évolution de la valeur totale"}}}
+        type:"doughnut",
+        data:{
+            labels:["Valeur d'achat totale","Valeur actuelle totale"],
+            datasets:[{data:[totalAchat,totalActuel], backgroundColor:["rgba(255,182,193,0.7)","rgba(144,238,144,0.7)"]}]
+        },
+        options:{plugins:{title:{display:true,text:"Évolution de la valeur totale"}}}
     });
 
-    // Statistiques par série
+    // --- Stats par série réelle ---
     const seriesData = {};
     cards.forEach(c => {
-      if(!seriesData[c.nomSet]) seriesData[c.nomSet]={achat:0,actuel:0};
-      seriesData[c.nomSet].achat+=c.prixAchat;
-      seriesData[c.nomSet].actuel+=c.prixActuel;
+        if(!seriesData[c.serie]) seriesData[c.serie]={achat:0,actuel:0};
+        seriesData[c.serie].achat += c.prixAchat;
+        seriesData[c.serie].actuel += c.prixActuel;
     });
     let html = `<table>
-      <thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead>
-      <tbody>`;
+        <thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead><tbody>`;
     Object.entries(seriesData).forEach(([serie,vals])=>{
-      const g = vals.actuel - vals.achat;
-      html += `<tr>
-        <td>${serie}</td>
-        <td>${vals.achat.toFixed(2)}</td>
-        <td>${vals.actuel.toFixed(2)}</td>
-        <td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td>
-      </tr>`;
+        const g = vals.actuel - vals.achat;
+        html += `<tr><td>${serie}</td><td>${vals.achat.toFixed(2)}</td><td>${vals.actuel.toFixed(2)}</td><td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td></tr>`;
     });
     html += "</tbody></table>";
     document.getElementById("statsSeries").innerHTML = html;
 
-  })
-  .catch(err => console.error("Erreur stats:", err));
-</script>
+    // --- Simulation "amusons-nous" ---
+    // Calculer moyennes par série pour remplacer prix manquants
+    const moyenneSerie = {};
+    cards.forEach(c=>{
+        if(!moyenneSerie[c.serie]) moyenneSerie[c.serie]=[];
+        if(c.prixAchat>0) moyenneSerie[c.serie].push(c.prixAchat);
+    });
 
+    const cardsSimules = cards.map(c=>{
+        let prixAchatSim = c.prixAchat>0 ? c.prixAchat : (moyenneSerie[c.serie].length ? (moyenneSerie[c.serie].reduce((a,b)=>a+b,0)/moyenneSerie[c.serie].length) : 0);
+        let prixActuelSim = c.prixActuel>0 ? c.prixActuel : prixAchatSim;
+        return {...c, prixAchatSim, prixActuelSim};
+    });
+
+    // Stats par série simulée
+    const simData = {};
+    cardsSimules.forEach(c=>{
+        if(!simData[c.serie]) simData[c.serie]={achat:0,actuel:0};
+        simData[c.serie].achat += c.prixAchatSim;
+        simData[c.serie].actuel += c.prixActuelSim;
+    });
+
+    let htmlSim = `<table>
+        <thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead><tbody>`;
+    Object.entries(simData).forEach(([serie,vals])=>{
+        const g = vals.actuel - vals.achat;
+        htmlSim += `<tr><td>${serie}</td><td>${vals.achat.toFixed(2)}</td><td>${vals.actuel.toFixed(2)}</td><td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td></tr>`;
+    });
+    htmlSim += "</tbody></table>";
+    document.getElementById("statsSimules").innerHTML = htmlSim;
+
+})
+.catch(err => console.error("Erreur stats:", err));
+</script>
 </body>
 </html>
