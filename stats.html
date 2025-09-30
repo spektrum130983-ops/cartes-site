@@ -1,255 +1,214 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Statistiques de ma collection</title>
+<title>Statistiques de ma Collection</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #ffe4e1;
-    color: #333;
-  }
+body {
+  font-family: Arial, sans-serif;
+  background: #fff0f5;
+  margin: 0;
+  padding: 80px 20px 20px 20px;
+  color: #333;
+}
+h1, h2 { text-align: center; color: #ff1493; margin-bottom: 20px; }
 
-  header {
-    text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #f8cdda, #1d2b64);
-    color: white;
-    border-bottom: 4px solid #f8cdda;
-  }
+/* Navbar */
+#navbar {
+  position: fixed; top: 0; left: 0; width: 100%;
+  background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px 0;
+  display: flex; justify-content: center; gap: 20px;
+  z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+#navbar a {
+  color: white; font-weight: bold; text-decoration: none;
+  padding: 8px 15px; border-radius: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+#navbar a:hover, #navbar a.active {
+  background: rgba(255,105,180,0.8); transform: scale(1.05);
+}
 
-  header h1 {
-    margin: 0;
-    font-size: 1.5em;
-  }
+/* Grille des stats */
+#totaux {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px; margin: 20px auto; max-width: 1200px;
+}
+.stat-card {
+  background: white; border-radius: 12px; padding: 15px;
+  text-align: center; font-weight: bold; font-size: 1.1em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative;
+}
+.stat-card span {
+  display: block; font-size: 1.5em; color: #ff1493; margin-top: 5px;
+}
+.stat-card[data-tooltip]:hover::after {
+  content: attr(data-tooltip); position: absolute;
+  bottom: -35px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.8); color: white; padding: 6px 10px;
+  border-radius: 8px; font-size: 0.85em; white-space: nowrap;
+}
 
-  #statsGlobales {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px;
-  }
+/* Graphiques */
+#charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px; max-width: 1200px; margin: auto;
+}
+canvas {
+  background: white; border-radius: 12px; padding: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
 
-  .stat-card {
-    position: relative;
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    text-align: center;
-    font-weight: bold;
-    display: inline-block;
-    min-width: 200px;
-    cursor: default;
-  }
-
-  .stat-card span {
-    display: block; /* retour à la ligne */
-    margin-top: 4px;
-    font-size: 1.1em;
-  }
-
-  /* Tooltip */
-  .stat-card[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.85);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.8em;
-    white-space: nowrap;
-    z-index: 1000;
-  }
-
-  #statsSeries {
-    margin: 30px;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  #statsSeries h2 {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9em;
-  }
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-  }
-
-  th {
-    background: #ffb6c1;
-  }
+/* Tableau par série */
+#statsSeries, #statsSimules {
+  max-width: 1000px; margin: 20px auto; overflow-x: auto;
+}
+table {
+  width: 100%; border-collapse: collapse; background: white;
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+th, td { padding: 10px 15px; text-align: center; border-bottom: 1px solid #eee; }
+th { background: #ff69b4; color: white; font-weight: bold; }
+tr:hover { background: #fff0f5; }
+.gain { color: green; font-weight: bold; }
+.perte { color: red; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>📊 Statistiques de ma collection</h1>
-</header>
+<nav id="navbar">
+  <a href="index.html">📂 Collection</a>
+  <a href="stats.html" class="active">📊 Statistiques</a>
+</nav>
 
-<!-- Totaux globaux -->
-<div id="statsGlobales">
-  <div class="stat-card" id="statAchat" data-tooltip="Somme des prix d'achat renseignés (colonne M)">
-    Valeur d'achat réelle
-    <span>0 €</span>
-  </div>
-  <div class="stat-card" id="statActuel" data-tooltip="Somme des prix actuels renseignés (colonne N)">
-    Valeur actuelle réelle
-    <span>0 €</span>
-  </div>
-  <div class="stat-card" id="statGain" data-tooltip="Gain réel = valeur actuelle réelle - valeur d'achat réelle">
-    Gain / Perte réelle
-    <span>0 €</span>
-  </div>
+<h1>📊 Statistiques de ma Collection</h1>
 
-  <!-- Totaux simulés -->
-  <div class="stat-card" id="statAchatSim" data-tooltip="Somme des prix d'achat simulés : moyenne de la série si vide">
-    Valeur d'achat simulée
-    <span>0 €</span>
+<div id="totaux">
+  <div class="stat-card" id="statAchat" data-tooltip="Somme des prix d'achat réels (colonne M).">
+    Valeur d'achat totale<span>0 €</span>
   </div>
-  <div class="stat-card" id="statActuelSim" data-tooltip="Somme des prix actuels simulés : prix d'achat simulé si vide">
-    Valeur actuelle simulée
-    <span>0 €</span>
+  <div class="stat-card" id="statActuel" data-tooltip="Somme des prix actuels réels (colonne N).">
+    Valeur actuelle totale<span>0 €</span>
   </div>
-  <div class="stat-card" id="statGainSim" data-tooltip="Gain simulé = valeur actuelle simulée - valeur d'achat simulée">
-    Gain / Perte simulée
-    <span>0 €</span>
+  <div class="stat-card" id="statGain" data-tooltip="Différence entre valeur actuelle et valeur d'achat.">
+    Gain / Perte<span>0 €</span>
+  </div>
+  <div class="stat-card" id="statAchatSim" data-tooltip="Somme des prix d'achat simulés (moyenne série si absent).">
+    Valeur d'achat simulée<span>0 €</span>
+  </div>
+  <div class="stat-card" id="statActuelSim" data-tooltip="Somme des prix actuels simulés (prix d'achat simulé si absent).">
+    Valeur actuelle simulée<span>0 €</span>
+  </div>
+  <div class="stat-card" id="statGainSim" data-tooltip="Gain/Perte simulé.">
+    Gain / Perte simulé<span>0 €</span>
   </div>
 </div>
 
-<!-- Stats par série -->
-<div id="statsSeries">
-  <h2>📌 Détails par série</h2>
-  <table id="seriesTable">
-    <thead>
-      <tr>
-        <th>Série</th>
-        <th>Achat réel (€)</th>
-        <th>Actuel réel (€)</th>
-        <th>Achat simulé (€)</th>
-        <th>Actuel simulé (€)</th>
-        <th>Gain/Perte réel (€)</th>
-        <th>Gain/Perte simulé (€)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<div id="charts">
+  <canvas id="chartPrix"></canvas>
 </div>
+
+<h2>📂 Statistiques par Série (réelles)</h2>
+<div id="statsSeries"></div>
+
+<h2>🎲 Amusons-nous (simulation prix manquants)</h2>
+<div id="statsSimules"></div>
 
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
-let allCards = [];
 
 fetch(sheetURL)
-  .then(res => res.text())
-  .then(text => {
+.then(res => res.text())
+.then(text => {
     const json = JSON.parse(text.substr(47).slice(0, -2));
-    allCards = json.table.rows.map(row => ({
-      serie: row.c[0]?.v || "",
-      nomSet: row.c[1]?.v || "",
-      booster: row.c[2]?.v || "",
-      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString() : ""),
-      date: row.c[4]?.f || "",
-      langue: row.c[5]?.v || "",
-      type: row.c[6]?.v || "",
-      nombre: row.c[7]?.f || "",
-      code: row.c[8]?.v || "",
-      image: row.c[9]?.v || "",
-      pdf: row.c[10]?.v || "",
-      imageOriginal: row.c[11]?.v || "",
-      prixAchat: row.c[12]?.v ? parseFloat(row.c[12].v) : null,   // colonne M
-      prixActuel: row.c[13]?.v ? parseFloat(row.c[13].v) : null   // colonne N
+    let cards = json.table.rows.map(row => ({
+        serie: row.c[0]?.v || "",
+        nomSet: row.c[1]?.v || "",
+        prixAchat: parseFloat(row.c[12]?.v || 0),
+        prixActuel: parseFloat(row.c[13]?.v || 0)
     }));
 
-    calculerStats();
-  })
-  .catch(err => console.error("Erreur chargement:", err));
+    // --- Totaux réels ---
+    const totalAchat = cards.reduce((a,b)=>a+b.prixAchat,0);
+    const totalActuel = cards.reduce((a,b)=>a+b.prixActuel,0);
+    const gain = totalActuel - totalAchat;
+    document.querySelector("#statAchat span").textContent = totalAchat.toFixed(2)+" €";
+    document.querySelector("#statActuel span").textContent = totalActuel.toFixed(2)+" €";
+    document.querySelector("#statGain span").textContent = (gain>=0?"+":"")+gain.toFixed(2)+" €";
+    document.querySelector("#statGain span").style.color = gain>=0?"green":"red";
 
-function calculerStats() {
-  let totalAchat = 0, totalActuel = 0;
-  let totalAchatSim = 0, totalActuelSim = 0;
+    // --- Graphique réel ---
+    new Chart(document.getElementById("chartPrix"), {
+        type: "bar",
+        data: {
+            labels: cards.map(c=>c.nomSet),
+            datasets:[
+                {label:"Prix d'achat", data: cards.map(c=>c.prixAchat), backgroundColor:"rgba(255,105,180,0.6)"},
+                {label:"Prix actuel", data: cards.map(c=>c.prixActuel), backgroundColor:"rgba(100,149,237,0.6)"}
+            ]
+        },
+        options:{responsive:true,plugins:{legend:{position:"top"}, title:{display:true,text:"Comparaison Prix d'achat vs Prix actuel par Set"}},scales:{y:{beginAtZero:true}}}
+    });
 
-  // Calcul des moyennes par série pour estimer les prix manquants
-  const seriesMoyennes = {};
-  const groupBySerie = {};
-  allCards.forEach(c => {
-    if (!groupBySerie[c.serie]) groupBySerie[c.serie] = [];
-    groupBySerie[c.serie].push(c);
-  });
+    // --- Stats par série réelle ---
+    const seriesData = {};
+    cards.forEach(c => {
+        if(!seriesData[c.serie]) seriesData[c.serie]={achat:0,actuel:0};
+        seriesData[c.serie].achat += c.prixAchat;
+        seriesData[c.serie].actuel += c.prixActuel;
+    });
+    let html = `<table><thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead><tbody>`;
+    Object.entries(seriesData).forEach(([serie,vals])=>{
+        const g = vals.actuel - vals.achat;
+        html += `<tr><td>${serie}</td><td>${vals.achat.toFixed(2)}</td><td>${vals.actuel.toFixed(2)}</td><td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td></tr>`;
+    });
+    html += "</tbody></table>";
+    document.getElementById("statsSeries").innerHTML = html;
 
-  for (const serie in groupBySerie) {
-    const achatsConnus = groupBySerie[serie].map(c=>c.prixAchat).filter(v=>v!=null);
-    const moyenneAchat = achatsConnus.length ? (achatsConnus.reduce((a,b)=>a+b,0)/achatsConnus.length) : 0;
-    seriesMoyennes[serie] = moyenneAchat;
-  }
+    // --- Simulation "amusons-nous" ---
+    const moyenneSerie = {};
+    cards.forEach(c=>{
+        if(!moyenneSerie[c.serie]) moyenneSerie[c.serie]=[];
+        if(c.prixAchat>0) moyenneSerie[c.serie].push(c.prixAchat);
+    });
+    const cardsSimules = cards.map(c=>{
+        let prixAchatSim = c.prixAchat>0 ? c.prixAchat : (moyenneSerie[c.serie].length ? (moyenneSerie[c.serie].reduce((a,b)=>a+b,0)/moyenneSerie[c.serie].length) : 0);
+        let prixActuelSim = c.prixActuel>0 ? c.prixActuel : prixAchatSim;
+        return {...c, prixAchatSim, prixActuelSim};
+    });
 
-  const seriesStats = {};
+    // --- Totaux simulés ---
+    const totalAchatSim = cardsSimules.reduce((a,b)=>a+b.prixAchatSim,0);
+    const totalActuelSim = cardsSimules.reduce((a,b)=>a+b.prixActuelSim,0);
+    const gainSim = totalActuelSim - totalAchatSim;
+    document.querySelector("#statAchatSim span").textContent = totalAchatSim.toFixed(2)+" €";
+    document.querySelector("#statActuelSim span").textContent = totalActuelSim.toFixed(2)+" €";
+    document.querySelector("#statGainSim span").textContent = (gainSim>=0?"+":"")+gainSim.toFixed(2)+" €";
+    document.querySelector("#statGainSim span").style.color = gainSim>=0?"green":"red";
 
-  allCards.forEach(c => {
-    const achat = c.prixAchat ?? 0;
-    const actuel = c.prixActuel ?? 0;
+    // --- Stats par série simulée ---
+    const simData = {};
+    cardsSimules.forEach(c=>{
+        if(!simData[c.serie]) simData[c.serie]={achat:0,actuel:0};
+        simData[c.serie].achat += c.prixAchatSim;
+        simData[c.serie].actuel += c.prixActuelSim;
+    });
+    let htmlSim = `<table><thead><tr><th>Série</th><th>Total Achat (€)</th><th>Total Actuel (€)</th><th>Gain / Perte (€)</th></tr></thead><tbody>`;
+    Object.entries(simData).forEach(([serie,vals])=>{
+        const g = vals.actuel - vals.achat;
+        htmlSim += `<tr><td>${serie}</td><td>${vals.achat.toFixed(2)}</td><td>${vals.actuel.toFixed(2)}</td><td class="${g>=0?'gain':'perte'}">${g>=0?'+':''}${g.toFixed(2)}</td></tr>`;
+    });
+    htmlSim += "</tbody></table>";
+    document.getElementById("statsSimules").innerHTML = htmlSim;
 
-    if (achat) totalAchat += achat;
-    if (actuel) totalActuel += actuel;
-
-    const achatSim = c.prixAchat ?? seriesMoyennes[c.serie];
-    const actuelSim = c.prixActuel ?? achatSim;
-
-    totalAchatSim += achatSim;
-    totalActuelSim += actuelSim;
-
-    if (!seriesStats[c.serie]) {
-      seriesStats[c.serie] = { achat:0, actuel:0, achatSim:0, actuelSim:0 };
-    }
-    seriesStats[c.serie].achat += achat;
-    seriesStats[c.serie].actuel += actuel;
-    seriesStats[c.serie].achatSim += achatSim;
-    seriesStats[c.serie].actuelSim += actuelSim;
-  });
-
-  // Mise à jour des totaux globaux
-  document.querySelector("#statAchat span").textContent = totalAchat.toFixed(2) + " €";
-  document.querySelector("#statActuel span").textContent = totalActuel.toFixed(2) + " €";
-  document.querySelector("#statGain span").textContent = (totalActuel-totalAchat).toFixed(2) + " €";
-
-  document.querySelector("#statAchatSim span").textContent = totalAchatSim.toFixed(2) + " €";
-  document.querySelector("#statActuelSim span").textContent = totalActuelSim.toFixed(2) + " €";
-  document.querySelector("#statGainSim span").textContent = (totalActuelSim-totalAchatSim).toFixed(2) + " €";
-
-  // Remplir tableau par série
-  const tbody = document.querySelector("#seriesTable tbody");
-  tbody.innerHTML = "";
-  Object.entries(seriesStats).forEach(([serie, vals]) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${serie}</td>
-      <td>${vals.achat.toFixed(2)} €</td>
-      <td>${vals.actuel.toFixed(2)} €</td>
-      <td>${vals.achatSim.toFixed(2)} €</td>
-      <td>${vals.actuelSim.toFixed(2)} €</td>
-      <td>${(vals.actuel - vals.achat).toFixed(2)} €</td>
-      <td>${(vals.actuelSim - vals.achatSim).toFixed(2)} €</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
+})
+.catch(err => console.error("Erreur stats:", err));
 </script>
 </body>
 </html>
