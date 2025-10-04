@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -99,7 +98,7 @@ tr:hover { background: #fff0f5; }
   <div class="stat-card" id="statGain" data-tooltip="Différence entre valeur actuelle et valeur d'achat.">
     Gain / Perte<span>0 €</span>
   </div>
-  <div class="stat-card" id="statAchatSim" data-tooltip="Somme des prix d'achat simulés (moyenne série si absent).">
+  <div class="stat-card" id="statAchatSim" data-tooltip="Somme des prix d'achat simulés (moyenne série ou 5€ si absent).">
     Valeur d'achat simulée<span>0 €</span>
   </div>
   <div class="stat-card" id="statActuelSim" data-tooltip="Somme des prix actuels simulés (prix d'achat simulé si absent).">
@@ -171,14 +170,17 @@ fetch(sheetURL)
     html += "</tbody></table>";
     document.getElementById("statsSeries").innerHTML = html;
 
-    // --- Simulation "amusons-nous" ---
+    // --- Simulation "amusons-nous" avec prix par défaut ---
+    const prixParDefaut = 5;
     const moyenneSerie = {};
     cards.forEach(c=>{
         if(!moyenneSerie[c.serie]) moyenneSerie[c.serie]=[];
         if(c.prixAchat>0) moyenneSerie[c.serie].push(c.prixAchat);
     });
+
     const cardsSimules = cards.map(c=>{
-        let prixAchatSim = c.prixAchat>0 ? c.prixAchat : (moyenneSerie[c.serie].length ? (moyenneSerie[c.serie].reduce((a,b)=>a+b,0)/moyenneSerie[c.serie].length) : 0);
+        let prixAchatSim = c.prixAchat>0 ? c.prixAchat : 
+            (moyenneSerie[c.serie].length ? (moyenneSerie[c.serie].reduce((a,b)=>a+b,0)/moyenneSerie[c.serie].length) : prixParDefaut);
         let prixActuelSim = c.prixActuel>0 ? c.prixActuel : prixAchatSim;
         return {...c, prixAchatSim, prixActuelSim};
     });
