@@ -70,7 +70,6 @@ h1 {
   background: #ff1493;
 }
 
-/* Indication filtre actif */
 #controls select.activeFilter, 
 #controls input.activeFilter {
   border-color: #ff1493;
@@ -146,7 +145,6 @@ h1 {
   opacity: 0;
 }
 
-/* Effet slide/fondu sur infos */
 .card .info {
   position: absolute;
   top: 0;
@@ -181,7 +179,6 @@ h1 {
   line-height: 1.2em;
 }
 
-/* Scrollbar manga style */
 .card .info::-webkit-scrollbar {
   width: 8px;
 }
@@ -194,11 +191,10 @@ h1 {
   border-radius: 10px;
 }
 
-/* === Lightbox === */
 #lightbox {
   display: none;
   position: fixed;
-  z-index: 10001; /* ✅ au-dessus de la navbar */
+  z-index: 10001; /* au-dessus navbar */
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: rgba(0,0,0,0.85);
@@ -283,7 +279,6 @@ h1 {
   transform: scale(1.05);
 }
 
-/* === Navbar === */
 #navbar {
   position: fixed;
   top: 0;
@@ -297,6 +292,7 @@ h1 {
   z-index: 10000;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
+
 #navbar a {
   color: white;
   font-weight: bold;
@@ -305,15 +301,18 @@ h1 {
   border-radius: 10px;
   transition: background 0.3s ease, transform 0.2s ease;
 }
+
 #navbar a:hover {
   background: rgba(255,105,180,0.7);
   transform: scale(1.05);
 }
+
 .fullscreen-active #navbar {
   display: none !important;
 }
+
 body {
-  padding-top: 60px; /* pour éviter que le contenu passe sous la navbar */
+  padding-top: 60px; /* éviter contenu sous navbar */
 }
 </style>
 </head>
@@ -409,21 +408,12 @@ function createSeriesButtons() {
   const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
   const allBtn = document.createElement("button");
   allBtn.textContent = "Toutes";
-  allBtn.addEventListener("click", ()=>{
-    container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-    allBtn.classList.add("active");
-    renderCards();
-  });
+  allBtn.addEventListener("click", ()=>{ container.querySelectorAll("button").forEach(b=>b.classList.remove("active")); allBtn.classList.add("active"); renderCards(); });
   container.appendChild(allBtn);
-
   series.forEach(s => {
     const btn = document.createElement("button");
     btn.textContent = s;
-    btn.addEventListener("click", () => {
-      container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      renderCardsBySerie(s);
-    });
+    btn.addEventListener("click", ()=>{ container.querySelectorAll("button").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); renderCardsBySerie(s); });
     container.appendChild(btn);
   });
 }
@@ -433,12 +423,12 @@ function renderCardsBySerie(serieName) {
   const total = allCards.length;
   document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
-  container.innerHTML = filtered.length ? filtered.map(c => renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
+  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
-function renderCardHTML(c) {
+function renderCardHTML(c, index) {
   const imgSrc = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
-  return `<div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-set="${c.nomSet}">
+  return `<div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-index="${index}">
     <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
     <div class="info">
       <h3>${c.nomSet}</h3>
@@ -452,15 +442,15 @@ function renderCardHTML(c) {
   </div>`;
 }
 
-// === Filtres ===
-["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
+// Filtres
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
   document.getElementById(id).addEventListener("input", e=>{
-    e.target.classList.toggle("activeFilter", e.target.value !== "");
+    e.target.classList.toggle("activeFilter", e.target.value!=="");
     renderCards();
   });
 });
 
-document.getElementById("resetFilters").addEventListener("click", () => {
+document.getElementById("resetFilters").addEventListener("click", ()=>{
   ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
     document.getElementById(id).value="";
     document.getElementById(id).classList.remove("activeFilter");
@@ -480,8 +470,10 @@ function getFilteredCards() {
   return allCards.filter(c=>{
     const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
     const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
-    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) && (typeFilter?c.type===typeFilter:true) &&
-           (boosterFilter?c.booster===boosterFilter:true) && (langueFilter?c.langue===langueFilter:true) &&
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) &&
+           (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) &&
+           (langueFilter?c.langue===langueFilter:true) &&
            (anneeFilter?c.annee===anneeFilter:true);
   });
 }
@@ -489,69 +481,85 @@ function getFilteredCards() {
 function renderCards() {
   const filtered = getFilteredCards();
   const total = allCards.length;
-  document.getElementById("counter").textContent = `Boosters affichés : ${filtered.length} / ${total}`;
+  document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
-  container.innerHTML = filtered.length ? filtered.map(c => renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
+  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
 // === Lightbox ===
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
-const closeLightbox = document.getElementById("closeLightbox");
+const closeLightboxBtn = document.getElementById("closeLightbox");
 const btnPdf = document.getElementById("btnPdf");
 const btnImg = document.getElementById("btnImg");
 const btnPrev = document.getElementById("btnPrev");
 const btnNext = document.getElementById("btnNext");
 const btnZoom = document.getElementById("btnZoom");
 
-let currentIndex=0, currentCards=[];
+let currentIndex = 0;
+let currentCards = [];
 
 document.getElementById("cards").addEventListener("click", e=>{
   const card = e.target.closest(".card");
-  if (!card) return;
-  const setName = card.getAttribute("data-set");
+  if(!card) return;
+  const index = parseInt(card.dataset.index);
   currentCards = getFilteredCards();
-  currentIndex = currentCards.findIndex(c=>c.nomSet===setName);
+  currentIndex = index;
   openLightbox();
 });
 
 function openLightbox() {
-  if (currentIndex<0 || currentIndex>=currentCards.length) return;
-  const c=currentCards[currentIndex];
-  lightboxImg.src = c.image || "";
+  if(currentIndex<0 || currentIndex>=currentCards.length) return;
+  const c = currentCards[currentIndex];
+  lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
   lightboxImg.alt = c.nomSet;
-  btnPdf.onclick=()=>{ if(c.pdf) window.open(c.pdf,"_blank"); };
-  btnImg.onclick=()=>{ if(c.imageOriginal) window.open(c.imageOriginal,"_blank"); };
-  lightbox.style.display="flex";
+  btnPdf.style.display = c.pdf ? "inline-block" : "none";
+  btnImg.style.display = c.imageOriginal ? "inline-block" : "none";
+  if(c.pdf) btnPdf.onclick = ()=>window.open(c.pdf,"_blank");
+  if(c.imageOriginal) btnImg.onclick = ()=>window.open(c.imageOriginal,"_blank");
+  lightbox.style.display = "flex";
   document.body.classList.add("fullscreen-active");
 }
 
 function closeLightboxFn() {
   lightbox.style.display="none";
   document.body.classList.remove("fullscreen-active");
+  lightboxImg.src="";
 }
-closeLightbox.addEventListener("click", closeLightboxFn);
-window.addEventListener("keydown", e=>{
-  if (lightbox.style.display==="flex") {
-    if (e.key==="Escape") closeLightboxFn();
-    else if (e.key==="ArrowLeft") prevCard();
-    else if (e.key==="ArrowRight") nextCard();
+
+closeLightboxBtn.addEventListener("click", closeLightboxFn);
+
+// Fermeture clic fond noir
+lightbox.addEventListener("click", e=>{
+  if(e.target===lightbox) closeLightboxFn();
+});
+
+btnPrev.addEventListener("click", ()=>{
+  if(currentCards.length){
+    currentIndex = (currentIndex-1+currentCards.length)%currentCards.length;
+    openLightbox();
   }
 });
 
-// ✅ fermeture en cliquant dans le fond noir
-lightbox.addEventListener("click", e=>{
-  if (e.target===lightbox) closeLightboxFn();
+btnNext.addEventListener("click", ()=>{
+  if(currentCards.length){
+    currentIndex = (currentIndex+1)%currentCards.length;
+    openLightbox();
+  }
 });
 
-btnPrev.addEventListener("click", prevCard);
-btnNext.addEventListener("click", nextCard);
 btnZoom.addEventListener("click", ()=>{
-  if (document.fullscreenElement) document.exitFullscreen();
+  if(document.fullscreenElement) document.exitFullscreen();
   else lightboxImg.requestFullscreen();
 });
-function prevCard(){ if (currentCards.length){ currentIndex=(currentIndex-1+currentCards.length)%currentCards.length; openLightbox(); }}
-function nextCard(){ if (currentCards.length){ currentIndex=(currentIndex+1)%currentCards.length; openLightbox(); }}
+
+window.addEventListener("keydown", e=>{
+  if(lightbox.style.display==="flex"){
+    if(e.key==="Escape") closeLightboxFn();
+    else if(e.key==="ArrowLeft") btnPrev.click();
+    else if(e.key==="ArrowRight") btnNext.click();
+  }
+});
 </script>
 </body>
 </html>
