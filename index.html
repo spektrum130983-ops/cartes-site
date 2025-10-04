@@ -146,6 +146,7 @@ h1 {
   opacity: 0;
 }
 
+/* Effet slide/fondu sur infos */
 .card .info {
   position: absolute;
   top: 0;
@@ -197,7 +198,7 @@ h1 {
 #lightbox {
   display: none;
   position: fixed;
-  z-index: 9999;
+  z-index: 10001; /* ✅ au-dessus de la navbar */
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: rgba(0,0,0,0.85);
@@ -205,6 +206,7 @@ h1 {
   align-items: center;
   flex-direction: column;
 }
+
 #lightbox img {
   max-width: 90%;
   max-height: 80%;
@@ -212,6 +214,7 @@ h1 {
   box-shadow: 0 0 25px rgba(255,255,255,0.8);
   animation: zoomIn 0.25s ease;
 }
+
 #closeLightbox {
   position: absolute;
   top: 20px;
@@ -223,9 +226,11 @@ h1 {
   transition: 0.3s;
   user-select: none;
 }
+
 #closeLightbox:hover {
   color: #ff69b4;
 }
+
 #lightboxButtons {
   margin-top: 20px;
   display: flex;
@@ -233,6 +238,7 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
 }
+
 #lightboxButtons button {
   padding: 10px 15px;
   border: none;
@@ -244,6 +250,7 @@ h1 {
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
 }
+
 #lightboxButtons button:hover {
   background: #ff1493;
   transform: scale(1.1);
@@ -305,9 +312,6 @@ h1 {
 .fullscreen-active #navbar {
   display: none !important;
 }
-.lightbox-open #navbar {
-  display: none !important;
-}
 body {
   padding-top: 60px; /* pour éviter que le contenu passe sous la navbar */
 }
@@ -360,31 +364,21 @@ fetch(sheetURL)
   .then(res => res.text())
   .then(text => {
     const json = JSON.parse(text.substr(47).slice(0, -2));
-
-    // Mapping dynamique des colonnes
-    const colIndex = {};
-    json.table.cols.forEach((col, i) => {
-      if (col.label) colIndex[col.label.trim()] = i;
-    });
-    console.log("✅ Colonnes détectées :", colIndex);
-
     allCards = json.table.rows.map(row => ({
-      serie: row.c[colIndex["Serie"]]?.v || "",
-      nomSet: row.c[colIndex["NomSet"]]?.v || "",
-      booster: row.c[colIndex["Booster"]]?.v || "",
-      annee: row.c[colIndex["Annee"]]?.f 
-              ? new Date(row.c[colIndex["Annee"]]?.f).getFullYear().toString() 
-              : (row.c[colIndex["Annee"]]?.v ? row.c[colIndex["Annee"]]?.v.toString() : ""),
-      date: row.c[colIndex["Date"]]?.f || row.c[colIndex["Date"]]?.v || "",
-      langue: row.c[colIndex["Langue"]]?.v || "",
-      type: row.c[colIndex["Type"]]?.v || "",
-      nombre: row.c[colIndex["Nombre"]]?.f || row.c[colIndex["Nombre"]]?.v || "",
-      code: row.c[colIndex["Code"]]?.v || "",
-      image: row.c[colIndex["Image"]]?.v || "",
-      pdf: row.c[colIndex["PDF"]]?.v || "",
-      imageOriginal: row.c[colIndex["ImageOriginale"]]?.v || "",
-      prixAchat: row.c[colIndex["PrixAchat"]]?.v || "",
-      prixActuel: row.c[colIndex["PrixActuel"]]?.v || ""
+      serie: row.c[0]?.v || "",
+      nomSet: row.c[1]?.v || "",
+      booster: row.c[2]?.v || "",
+      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString() : ""),
+      date: row.c[4]?.f || "",
+      langue: row.c[5]?.v || "",
+      type: row.c[6]?.v || "",
+      nombre: row.c[7]?.f || "",
+      code: row.c[8]?.v || "",
+      image: row.c[9]?.v || "",
+      pdf: row.c[10]?.v || "",
+      imageOriginal: row.c[11]?.v || "",
+      prixAchat: row.c[12]?.v || "",
+      prixActuel: row.c[13]?.v || ""
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -458,6 +452,7 @@ function renderCardHTML(c) {
   </div>`;
 }
 
+// === Filtres ===
 ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id => {
   document.getElementById(id).addEventListener("input", e=>{
     e.target.classList.toggle("activeFilter", e.target.value !== "");
@@ -482,18 +477,13 @@ function getFilteredCards() {
   const langueFilter = document.getElementById("filterLangue").value;
   const anneeFilter = document.getElementById("filterAnnee").value;
 
-  const activeSerieBtn = document.querySelector("#seriesButtons button.active");
-  const serieFilter = activeSerieBtn && activeSerieBtn.textContent !== "Toutes" ? activeSerieBtn.textContent : "";
-
-  return allCards.filter(c =>
-    (!serieFilter || c.serie === serieFilter) &&
-    (!nomSetFilter || c.nomSet === nomSetFilter) &&
-    (!typeFilter || c.type === typeFilter) &&
-    (!boosterFilter || c.booster === boosterFilter) &&
-    (!langueFilter || c.langue === langueFilter) &&
-    (!anneeFilter || c.annee === anneeFilter) &&
-    Object.values(c).some(v => v && v.toString().toLowerCase().includes(searchText))
-  );
+  return allCards.filter(c=>{
+    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
+    const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) && (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) && (langueFilter?c.langue===langueFilter:true) &&
+           (anneeFilter?c.annee===anneeFilter:true);
+  });
 }
 
 function renderCards() {
@@ -504,60 +494,64 @@ function renderCards() {
   container.innerHTML = filtered.length ? filtered.map(c => renderCardHTML(c)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
-// === Gestion Lightbox ===
+// === Lightbox ===
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
 const closeLightbox = document.getElementById("closeLightbox");
+const btnPdf = document.getElementById("btnPdf");
+const btnImg = document.getElementById("btnImg");
 const btnPrev = document.getElementById("btnPrev");
 const btnNext = document.getElementById("btnNext");
 const btnZoom = document.getElementById("btnZoom");
-const btnPdf = document.getElementById("btnPdf");
-const btnImg = document.getElementById("btnImg");
-let currentIndex = 0;
-let currentList = [];
 
-function openLightbox(index, list) {
-  currentIndex = index;
-  currentList = list;
-  const card = list[index];
-  lightboxImg.src = card.image || "https://via.placeholder.com/800x1200?text=Pas+d'image";
-  lightboxImg.alt = card.nomSet;
-  lightbox.style.display = "flex";
-  lightbox.setAttribute("aria-hidden","false");
-  document.body.classList.add("lightbox-open");
-  btnPdf.onclick = () => { if(card.pdf) window.open(card.pdf,"_blank"); else alert("Pas de PDF disponible."); };
-  btnImg.onclick = () => { if(card.imageOriginal) window.open(card.imageOriginal,"_blank"); else alert("Pas d'image disponible."); };
+let currentIndex=0, currentCards=[];
+
+document.getElementById("cards").addEventListener("click", e=>{
+  const card = e.target.closest(".card");
+  if (!card) return;
+  const setName = card.getAttribute("data-set");
+  currentCards = getFilteredCards();
+  currentIndex = currentCards.findIndex(c=>c.nomSet===setName);
+  openLightbox();
+});
+
+function openLightbox() {
+  if (currentIndex<0 || currentIndex>=currentCards.length) return;
+  const c=currentCards[currentIndex];
+  lightboxImg.src = c.image || "";
+  lightboxImg.alt = c.nomSet;
+  btnPdf.onclick=()=>{ if(c.pdf) window.open(c.pdf,"_blank"); };
+  btnImg.onclick=()=>{ if(c.imageOriginal) window.open(c.imageOriginal,"_blank"); };
+  lightbox.style.display="flex";
+  document.body.classList.add("fullscreen-active");
 }
 
 function closeLightboxFn() {
-  lightbox.style.display = "none";
-  lightbox.setAttribute("aria-hidden","true");
-  document.body.classList.remove("lightbox-open");
+  lightbox.style.display="none";
+  document.body.classList.remove("fullscreen-active");
 }
-
 closeLightbox.addEventListener("click", closeLightboxFn);
-lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightboxFn(); });
-
-btnPrev.addEventListener("click", ()=>{ if(currentList.length){ currentIndex=(currentIndex-1+currentList.length)%currentList.length; openLightbox(currentIndex,currentList);} });
-btnNext.addEventListener("click", ()=>{ if(currentList.length){ currentIndex=(currentIndex+1)%currentList.length; openLightbox(currentIndex,currentList);} });
-btnZoom.addEventListener("click", ()=>{ if(lightboxImg.src) window.open(lightboxImg.src,"_blank"); });
-
-document.addEventListener("keydown", e=>{
-  if(lightbox.style.display==="flex"){
-    if(e.key==="Escape") closeLightboxFn();
-    if(e.key==="ArrowLeft") btnPrev.click();
-    if(e.key==="ArrowRight") btnNext.click();
+window.addEventListener("keydown", e=>{
+  if (lightbox.style.display==="flex") {
+    if (e.key==="Escape") closeLightboxFn();
+    else if (e.key==="ArrowLeft") prevCard();
+    else if (e.key==="ArrowRight") nextCard();
   }
 });
 
-document.getElementById("cards").addEventListener("click", e=>{
-  const cardDiv = e.target.closest(".card");
-  if(!cardDiv) return;
-  const cardsOnPage = Array.from(document.querySelectorAll(".card"));
-  const list = getFilteredCards();
-  const index = cardsOnPage.indexOf(cardDiv);
-  openLightbox(index, list);
+// ✅ fermeture en cliquant dans le fond noir
+lightbox.addEventListener("click", e=>{
+  if (e.target===lightbox) closeLightboxFn();
 });
+
+btnPrev.addEventListener("click", prevCard);
+btnNext.addEventListener("click", nextCard);
+btnZoom.addEventListener("click", ()=>{
+  if (document.fullscreenElement) document.exitFullscreen();
+  else lightboxImg.requestFullscreen();
+});
+function prevCard(){ if (currentCards.length){ currentIndex=(currentIndex-1+currentCards.length)%currentCards.length; openLightbox(); }}
+function nextCard(){ if (currentCards.length){ currentIndex=(currentIndex+1)%currentCards.length; openLightbox(); }}
 </script>
 </body>
 </html>
