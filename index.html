@@ -381,7 +381,7 @@ fetch(sheetURL)
       imageOriginal: row.c[11]?.v || "",
       prixAchat: row.c[12]?.v || "",
       prixActuel: row.c[13]?.v || ""
-      bandeau: row.c[14]?.v || ""
+      bandeau: row.c[15]?.v || ""
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -602,6 +602,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
