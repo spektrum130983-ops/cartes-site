@@ -4,22 +4,316 @@
 <meta charset="UTF-8">
 <title>Ma Collection de Boosters</title>
 <style>
-/* === ton CSS inchangé === */
 /* Polices */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 body {
   font-family: 'Arial', sans-serif;
-  margin: 0; padding: 0;
-  background: #ffe4e1; color: #333;
+  margin: 0;
+  padding: 0;
+  background: #ffe4e1;
+  color: #333;
 }
+
 header {
-  text-align: center; padding: 20px;
+  text-align: center;
+  padding: 20px;
   background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  color: white; border-bottom: 4px solid #f8cdda;
+  color: white;
+  border-bottom: 4px solid #f8cdda;
 }
-header img { max-width:150px; border:3px solid white; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.3); }
-h1 { font-family:'Press Start 2P', cursive; font-size:1.5em; margin:10px 0 0 0; text-shadow:2px 2px #ffb6c1; }
-/* (le reste du CSS inchangé) */
+
+header img {
+  max-width: 150px;
+  border: 3px solid white;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.5em;
+  margin: 10px 0 0 0;
+  text-shadow: 2px 2px #ffb6c1;
+}
+
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+#controls input, #controls select, #controls button {
+  padding: 8px;
+  font-size: 0.9em;
+  border-radius: 10px;
+  border: 2px solid #ffb6c1;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+#controls input:focus, #controls select:focus {
+  border-color: #ff69b4;
+}
+
+#controls button {
+  background: #ff69b4;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#controls button:hover {
+  background: #ff1493;
+}
+
+#controls select.activeFilter, 
+#controls input.activeFilter {
+  border-color: #ff1493;
+  background: #fff0f5;
+  box-shadow: 0 0 8px rgba(255,105,180,0.5);
+}
+
+#seriesButtons {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#seriesButtons button {
+  margin: 2px;
+  padding: 5px 10px;
+  font-size: 0.8em;
+  border-radius: 10px;
+  border: 2px solid #ff69b4;
+  background: #fff0f5;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#seriesButtons button.active, #seriesButtons button:hover {
+  background: #ff69b4;
+  color: white;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+
+#counter {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1em;
+}
+
+#cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin: 0 auto 40px auto;
+  max-width: 1200px;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 15px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  border: 3px solid #ffb6c1;
+  background: #fff0f5;
+}
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transform: translateY(-5px);
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover img {
+  opacity: 0;
+}
+
+.card .info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  background: rgba(255, 228, 225, 0.95);
+  opacity: 0;
+  overflow-y: auto;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  font-size: 0.85em;
+}
+
+.card:hover .info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card h3 {
+  margin: 0 0 5px;
+  font-size: 1em;
+  color: #ff1493;
+  text-shadow: 1px 1px #fff;
+}
+
+.card p {
+  margin: 2px 0;
+  color: #333;
+  line-height: 1.2em;
+}
+
+.card .info::-webkit-scrollbar {
+  width: 8px;
+}
+.card .info::-webkit-scrollbar-track {
+  background: #ffe4e1;
+  border-radius: 10px;
+}
+.card .info::-webkit-scrollbar-thumb {
+  background: #ff69b4;
+  border-radius: 10px;
+}
+
+#lightbox {
+  display: none;
+  position: fixed;
+  z-index: 10001; /* au-dessus navbar */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#lightbox img {
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 15px;
+  box-shadow: 0 0 25px rgba(255,255,255,0.8);
+  animation: zoomIn 0.25s ease;
+}
+
+#closeLightbox {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  user-select: none;
+}
+
+#closeLightbox:hover {
+  color: #ff69b4;
+}
+
+#lightboxButtons {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#lightboxButtons button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: #ff69b4;
+  color: white;
+  font-size: 0.9em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#lightboxButtons button:hover {
+  background: #ff1493;
+  transform: scale(1.1);
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
+  .card { height: 260px; }
+}
+
+#btnStats {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 15px;
+  font-size: 0.9em;
+  border-radius: 10px;
+  border: 2px solid #ffb6c1;
+  background: #ff69b4;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+#btnStats:hover {
+  background: #ff1493;
+  transform: scale(1.05);
+}
+
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#navbar a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#navbar a:hover {
+  background: rgba(255,105,180,0.7);
+  transform: scale(1.05);
+}
+
+.fullscreen-active #navbar {
+  display: none !important;
+}
+
+body {
+  padding-top: 60px; /* éviter contenu sous navbar */
+}
 </style>
 </head>
 <body>
@@ -66,7 +360,7 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBl
 let allCards = [];
 let currentCards = [];
 let currentIndex = 0;
-let activeSerie = null; // ✅ nouvelle variable
+let activeSerie = null; // ✅ mémorise si une série est sélectionnée
 
 fetch(sheetURL)
   .then(res => res.text())
@@ -140,7 +434,7 @@ function createSeriesButtons() {
 }
 
 function renderCardsBySerie(serieName) {
-  activeSerie = serieName; // ✅ mémorise la série active
+  activeSerie = serieName; // ✅ indique la série active
   const filtered = allCards.filter(c => c.serie === serieName);
   const total = allCards.length;
   document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${total}`;
@@ -164,7 +458,6 @@ function renderCardHTML(c, index) {
   </div>`;
 }
 
-// === filtres ===
 ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
   document.getElementById(id).addEventListener("input", e=>{
     e.target.classList.toggle("activeFilter", e.target.value!=="");
@@ -201,7 +494,7 @@ function getFilteredCards() {
 }
 
 function renderCards() {
-  activeSerie = null; // ✅ désactive la série quand on filtre
+  activeSerie = null; // ✅ désactive la série si on filtre
   const filtered = getFilteredCards();
   const total = allCards.length;
   document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${total}`;
@@ -224,12 +517,9 @@ document.getElementById("cards").addEventListener("click", e=>{
   if(!card) return;
   const index = parseInt(card.dataset.index);
 
-  // ✅ Utilise la bonne source selon le mode actif
-  if(activeSerie) {
-    currentCards = allCards.filter(c => c.serie === activeSerie);
-  } else {
-    currentCards = getFilteredCards();
-  }
+  // ✅ bon jeu de données selon contexte
+  if(activeSerie) currentCards = allCards.filter(c => c.serie === activeSerie);
+  else currentCards = getFilteredCards();
 
   currentIndex = index;
   openLightbox();
@@ -268,5 +558,6 @@ window.addEventListener("keydown", e=>{
   }
 });
 </script>
+
 </body>
 </html>
