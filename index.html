@@ -493,30 +493,41 @@ function renderCardHTML(c,index){
 }
 
 // === Bandeau temporaire
-function afficherBandeauSheet(){
-  const bandeau = document.getElementById("bandeau");
-  const contenu = document.getElementById("contenu-bandeau");
-  contenu.innerHTML = "";
+function afficherBandeauSheet() {
+  const bandeau = document.getElementById('bandeau');
+  const contenu = document.getElementById('contenu-bandeau');
+  contenu.innerHTML = ""; // vider avant d'ajouter
 
-  const sorties = [
-    { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
-    { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
-    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
-    { serie: "Magic", date: "vendredi 21 novembre 2025" }
-  ];
+  // Récupération depuis le Sheets "Stats"
+  const statsURL = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json&gid=STATS_GID";
+  
+  fetch(statsURL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows.slice(26); // commencer à la ligne 27
+      rows.forEach(r => {
+        const serie = r.c[0]?.v;
+        const nom = r.c[1]?.v;
+        const date = r.c[2]?.v;
+        if(serie && nom && date){
+          // Cherche une image aléatoire dans allCards pour la série
+          const imagesSerie = allCards.filter(c => c.serie===serie && c.image).map(c=>c.image);
+          const imgSrc = imagesSerie.length ? imagesSerie[Math.floor(Math.random()*imagesSerie.length)] : "https://via.placeholder.com/24";
+          
+          const div = document.createElement('div');
+          div.className = 'sortie';
+          div.innerHTML = `<img src="${imgSrc}" alt="${serie}"> <strong>${serie}:</strong> ${nom} - ${date}`;
+          contenu.appendChild(div);
+        }
+      });
 
-  sorties.forEach(s => {
-    const card = allCards.find(c => c.serie.trim().toLowerCase() === s.serie.trim().toLowerCase());
-    const imgSrc = card && card.image ? card.image : "https://via.placeholder.com/24";
-    const div = document.createElement("div");
-    div.className = "sortie";
-    div.innerHTML = `<img src="${imgSrc}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
-    contenu.appendChild(div);
-  });
-
-  bandeau.style.display = "flex";
-  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 min
+      bandeau.style.display = 'flex';
+      setTimeout(() => { bandeau.style.display = 'none'; }, 120000); // 2 min
+    })
+    .catch(err => console.error("Erreur chargement bandeau Stats:", err));
 }
+
 
 // === Lightbox
 const lightbox = document.getElementById("lightbox");
@@ -601,3 +612,4 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
