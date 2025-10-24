@@ -572,7 +572,19 @@ window.addEventListener("keydown", e=>{
   }
 });
 </script>
+<script>
+document.querySelector('a[href="stats.html"]').addEventListener('click', function (e) {
+  e.preventDefault(); // empêche la navigation immédiate
+  const pass = prompt("🔒 Entrez le mot de passe pour accéder aux statistiques :");
+  if (pass === "booster") { // 🔑 ton mot de passe ici
+    window.location.href = "stats.html";
+  } else if (pass !== null) {
+    alert("❌ Mot de passe incorrect !");
+  }
+});
+</script>
 
 </body>
 </html>
+
 
