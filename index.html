@@ -381,6 +381,7 @@ fetch(sheetURL)
       imageOriginal: row.c[11]?.v || "",
       prixAchat: row.c[12]?.v || "",
       prixActuel: row.c[13]?.v || ""
+      bandeau: row.c[14]?.v || ""
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -434,13 +435,24 @@ function createSeriesButtons() {
 }
 
 function renderCardsBySerie(serieName) {
-  activeSerie = serieName; // ✅ indique la série active
+  activeSerie = serieName;
   const filtered = allCards.filter(c => c.serie === serieName);
   const total = allCards.length;
   document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
   container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
+
+  // 🎨 Mettre à jour le fond du header si un bandeau existe
+  const header = document.querySelector("header");
+  const bandeau = filtered.find(c => c.bandeau)?.bandeau;
+  if (bandeau) {
+    header.style.background = `url('${bandeau}') center/cover no-repeat`;
+  } else {
+    // 🌈 sinon, on remet le dégradé par défaut
+    header.style.background = "linear-gradient(135deg, #f8cdda, #1d2b64)";
+  }
 }
+
 
 function renderCardHTML(c, index) {
   const imgSrc = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
@@ -494,13 +506,17 @@ function getFilteredCards() {
 }
 
 function renderCards() {
-  activeSerie = null; // ✅ désactive la série si on filtre
+  activeSerie = null;
   const filtered = getFilteredCards();
   const total = allCards.length;
   document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${total}`;
   const container = document.getElementById("cards");
   container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
+
+  // 🔙 Revenir au fond par défaut
+  document.querySelector("header").style.background = "linear-gradient(135deg, #f8cdda, #1d2b64)";
 }
+
 
 // === Lightbox ===
 const lightbox = document.getElementById("lightbox");
@@ -586,6 +602,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
