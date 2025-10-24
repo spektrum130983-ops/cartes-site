@@ -331,9 +331,12 @@ h1 {
   <h1>Ma Collection de Boosters</h1>
 </header>
 
-<div id="bandeau" style="display: none;">
-  <div id="contenu-bandeau"></div>
+<div id="bandeau" style="display: none; justify-content: space-between; align-items: center; padding: 5px 15px;">
+  <div id="bandeau-gauche" style="font-weight: bold;">Prochaine sortie :</div>
+  <div id="contenu-bandeau" style="display: flex; gap: 10px; overflow-x: auto;"></div>
+  <div id="bandeau-droite" style="font-weight: bold;"></div>
 </div>
+
 
 <div id="controls">
   <input type="text" id="search" placeholder="Rechercher sur toutes les colonnes...">
@@ -498,12 +501,14 @@ function renderCardHTML(c,index){
 function afficherBandeauSheet(){
   const bandeau = document.getElementById("bandeau");
   const contenu = document.getElementById("contenu-bandeau");
+  const totalDiv = document.getElementById("bandeau-droite");
   contenu.innerHTML = "";
 
+  // Sorties à venir
   const sorties = [
     { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
     { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
-    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
+    { serie: "Pokemon", date: "vendredi 14 novembre 2025" },
     { serie: "Magic", date: "vendredi 21 novembre 2025" }
   ];
 
@@ -512,13 +517,18 @@ function afficherBandeauSheet(){
     const imgSrc = card && card.image ? card.image : "https://via.placeholder.com/24";
     const div = document.createElement("div");
     div.className = "sortie";
-    div.innerHTML = `<img src="${imgSrc}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
+    div.innerHTML = `<img src="${imgSrc}" alt="${s.serie}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid #ccc;"> <strong>${s.serie}:</strong> ${s.date}`;
     contenu.appendChild(div);
   });
 
+  // Calcul du total des cartes (colonne "nombre")
+  const totalCartes = allCards.reduce((sum, c) => sum + (parseInt(c.nombre) || 0), 0);
+  totalDiv.textContent = `Total cartes : ${totalCartes}`;
+
   bandeau.style.display = "flex";
-  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 min
+  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 minutes
 }
+
 
 // === Lightbox
 const lightbox = document.getElementById("lightbox");
@@ -603,3 +613,4 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
