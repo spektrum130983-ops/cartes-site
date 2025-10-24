@@ -311,6 +311,14 @@ h1 {
   display: none !important;
 }
 
+#bandeau img {
+  vertical-align: middle;
+  margin-right: 10px;
+  width: 30px;
+  height: auto;
+}
+
+  
 body {
   padding-top: 60px; /* éviter contenu sous navbar */
 }
@@ -326,6 +334,10 @@ body {
   <img src="https://i.postimg.cc/wvPSqDzq/logo.jpg" alt="Logo Manga">
   <h1>Ma Collection de Boosters</h1>
 </header>
+  
+<div id="bandeau" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fff; color: #000; padding: 10px 0; text-align: center; font-family: Arial, sans-serif; font-size: 16px; z-index: 9999;">
+  <div id="contenu-bandeau"></div>
+</div>
 
 <div id="controls">
   <input type="text" id="search" placeholder="Rechercher sur toutes les colonnes...">
@@ -571,6 +583,55 @@ window.addEventListener("keydown", e=>{
     else if(e.key==="ArrowRight") btnNext.click();
   }
 });
+
+  const sorties = [
+  {
+    serie: "Star Wars",
+    nom: "Secret du Pouvoir",
+    date: "vendredi 7 novembre 2025",
+    image: "https://starwarsunlimited.com/fr/products/set-6-secrets-du-pouvoir" // Remplace par l'URL de l'image souhaitée
+  },
+  {
+    serie: "Lorcana",
+    nom: "Lueurs dans les Profondeurs",
+    date: "vendredi 7 novembre 2025",
+    image: "https://www.nos-jeux-de-societe.fr/chapitre-10-lorcana-lueurs-dans-les-profondeurs/" // Remplace par l'URL de l'image souhaitée
+  },
+  {
+    serie: "Pokémon",
+    nom: "Flammes Fantasmagoriques",
+    date: "vendredi 14 novembre 2025",
+    image: "https://www.pokemon.com/fr/jcc-pokemon/mega-evolution-flammes-fantasmagoriques" // Remplace par l'URL de l'image souhaitée
+  },
+  {
+    serie: "Magic",
+    nom: "Avatar, le Dernier Maître de l'Air",
+    date: "vendredi 21 novembre 2025",
+    image: "https://magic.wizards.com/fr/products/avatar-the-last-airbender" // Remplace par l'URL de l'image souhaitée
+  }
+];
+
+function afficherBandeau() {
+  const bandeau = document.getElementById('bandeau');
+  const contenu = document.getElementById('contenu-bandeau');
+  
+  sorties.forEach(sortie => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '10px';
+    div.innerHTML = `<img src="${sortie.image}" alt="${sortie.serie}"> <strong>${sortie.serie}</strong> – ${sortie.nom} : <em>${sortie.date}</em>`;
+    contenu.appendChild(div);
+  });
+
+  bandeau.style.display = 'block';
+
+  setTimeout(() => {
+    bandeau.style.display = 'none';
+  }, 120000); // 2 minutes
+}
+
+document.addEventListener('DOMContentLoaded', afficherBandeau);
+
+  
 </script>
 <script>
 document.querySelector('a[href="stats.html"]').addEventListener('click', function (e) {
@@ -586,5 +647,6 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
