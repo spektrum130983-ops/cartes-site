@@ -311,12 +311,38 @@ h1 {
   display: none !important;
 }
 
-#bandeau img {
-  vertical-align: middle;
-  margin-right: 10px;
-  width: 30px;
-  height: auto;
+#bandeau {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  border: 2px solid #ff69b4;
+  border-radius: 12px;
+  padding: 5px 10px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
+
+#bandeau div.sortie {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#bandeau img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
+
 
   
 body {
@@ -335,7 +361,7 @@ body {
   <h1>Ma Collection de Boosters</h1>
 </header>
   
-<div id="bandeau" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fff; color: #000; padding: 10px 0; text-align: center; font-family: Arial, sans-serif; font-size: 16px; z-index: 9999;">
+<div id="bandeau" style="display: none;">
   <div id="contenu-bandeau"></div>
 </div>
 
@@ -585,51 +611,30 @@ window.addEventListener("keydown", e=>{
 });
 
   const sorties = [
-  {
-    serie: "Star Wars",
-    nom: "Secret du Pouvoir",
-    date: "vendredi 7 novembre 2025",
-    image: "https://starwarsunlimited.com/fr/products/set-6-secrets-du-pouvoir" // Remplace par l'URL de l'image souhaitée
-  },
-  {
-    serie: "Lorcana",
-    nom: "Lueurs dans les Profondeurs",
-    date: "vendredi 7 novembre 2025",
-    image: "https://www.nos-jeux-de-societe.fr/chapitre-10-lorcana-lueurs-dans-les-profondeurs/" // Remplace par l'URL de l'image souhaitée
-  },
-  {
-    serie: "Pokémon",
-    nom: "Flammes Fantasmagoriques",
-    date: "vendredi 14 novembre 2025",
-    image: "https://www.pokemon.com/fr/jcc-pokemon/mega-evolution-flammes-fantasmagoriques" // Remplace par l'URL de l'image souhaitée
-  },
-  {
-    serie: "Magic",
-    nom: "Avatar, le Dernier Maître de l'Air",
-    date: "vendredi 21 novembre 2025",
-    image: "https://magic.wizards.com/fr/products/avatar-the-last-airbender" // Remplace par l'URL de l'image souhaitée
-  }
+  {serie: "Star Wars", nom: "Secret du Pouvoir", date: "vendredi 7 novembre 2025", image: "https://upload.wikimedia.org/wikipedia/fr/thumb/3/3e/Star_Wars_Logo.svg/64px-Star_Wars_Logo.svg.png"},
+  {serie: "Lorcana", nom: "Lueurs dans les Profondeurs", date: "vendredi 7 novembre 2025", image: "https://upload.wikimedia.org/wikipedia/en/thumb/3/36/Lorcana_logo.png/64px-Lorcana_logo.png"},
+  {serie: "Pokemon", nom: "Flammes Fantasmagoriques", date: "vendredi 14 novembre 2025", image: "https://upload.wikimedia.org/wikipedia/fr/thumb/9/98/Logo_Pok%C3%A9mon.svg/64px-Logo_Pok%C3%A9mon.svg.png"},
+  {serie: "Magic", nom: "Avatar, le Dernier Maître de l'Air", date: "vendredi 21 novembre 2025", image: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4a/Magic_the_gathering_card_game_logo.svg/64px-Magic_the_gathering_card_game_logo.svg.png"}
 ];
 
 function afficherBandeau() {
   const bandeau = document.getElementById('bandeau');
   const contenu = document.getElementById('contenu-bandeau');
-  
-  sorties.forEach(sortie => {
+
+  sorties.forEach(s => {
     const div = document.createElement('div');
-    div.style.marginBottom = '10px';
-    div.innerHTML = `<img src="${sortie.image}" alt="${sortie.serie}"> <strong>${sortie.serie}</strong> – ${sortie.nom} : <em>${sortie.date}</em>`;
+    div.className = 'sortie';
+    div.innerHTML = `<img src="${s.image}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.nom} (${s.date})`;
     contenu.appendChild(div);
   });
 
-  bandeau.style.display = 'block';
+  bandeau.style.display = 'flex';
 
-  setTimeout(() => {
-    bandeau.style.display = 'none';
-  }, 120000); // 2 minutes
+  setTimeout(() => { bandeau.style.display = 'none'; }, 120000); // 2 minutes
 }
 
 document.addEventListener('DOMContentLoaded', afficherBandeau);
+
 
   
 </script>
@@ -647,6 +652,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
