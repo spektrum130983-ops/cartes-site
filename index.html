@@ -313,9 +313,9 @@ h1 {
 
 #bandeau {
   position: fixed;
-  top: 60px;        /* descend sous le menu */
-  left: 20px;       /* décale à gauche */
-  transform: none;  /* on n’a plus besoin de centrer horizontalement */
+  top: 60px;   /* sous le menu */
+  left: 20px;  /* légèrement à gauche */
+  transform: none;
   background: rgba(255,255,255,0.95);
   border: 2px solid #ff69b4;
   border-radius: 12px;
@@ -323,12 +323,10 @@ h1 {
   font-family: Arial, sans-serif;
   font-size: 14px;
   z-index: 9999;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
 }
-
 
 #bandeau div.sortie {
   display: flex;
@@ -337,12 +335,13 @@ h1 {
 }
 
 #bandeau img {
-  width: 24px;
+  width: 24px;         /* mini-image */
   height: 24px;
-  border-radius: 50%;
+  border-radius: 50%;  /* ronde */
   object-fit: cover;
   border: 1px solid #ccc;
 }
+
 
 
   
@@ -640,20 +639,36 @@ const sorties = [
 
 
 
-function afficherBandeau() {
+function afficherBandeauSheet() {
   const bandeau = document.getElementById('bandeau');
   const contenu = document.getElementById('contenu-bandeau');
-  contenu.innerHTML = ""; // vide avant d'ajouter
-  sorties.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'sortie';
-    div.innerHTML = `<img src="${s.image}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.nom} (${s.date})`;
-    contenu.appendChild(div);
+  contenu.innerHTML = ""; // vider avant d'ajouter
+
+  // Récupère les dernières sorties par série
+  const dernieresSorties = [
+    { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
+    { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
+    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
+    { serie: "Magic", date: "vendredi 21 novembre 2025" }
+  ];
+
+  dernieresSorties.forEach(s => {
+    // Trouve la première carte correspondant à la série
+    const card = allCards.find(c => c.serie === s.serie);
+    if(card && card.image){
+      const div = document.createElement('div');
+      div.className = 'sortie';
+      div.innerHTML = `<img src="${card.image}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
+      contenu.appendChild(div);
+    }
   });
+
   bandeau.style.display = 'flex';
-  setTimeout(() => { bandeau.style.display = 'none'; }, 120000);
+  setTimeout(() => { bandeau.style.display = 'none'; }, 120000); // 2 min
 }
-document.addEventListener('DOMContentLoaded', afficherBandeau);
+
+document.addEventListener('DOMContentLoaded', afficherBandeauSheet);
+
 
 </script>
 <script>
@@ -670,6 +685,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
