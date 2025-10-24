@@ -331,11 +331,17 @@ h1 {
   <h1>Ma Collection de Boosters</h1>
 </header>
 
-<div id="bandeau" style="display: none; justify-content: space-between; align-items: center; padding: 5px 15px;">
-  <div id="bandeau-gauche" style="font-weight: bold;">Prochaine sortie :</div>
-  <div id="contenu-bandeau" style="display: flex; gap: 10px; overflow-x: auto;"></div>
-  <div id="bandeau-droite" style="font-weight: bold;"></div>
+<!-- Bandeau gauche : sorties temporaires -->
+<div id="bandeau-sorties" style="display:none; position: fixed; top: 70px; left: 20px; background: rgba(255,255,255,0.95); border: 2px solid #ff69b4; border-radius: 12px; padding: 5px 10px; font-size: 14px; z-index: 9999; display: flex; gap: 10px; align-items: center;">
+  <div style="font-weight:bold;">Prochaine sortie :</div>
+  <div id="contenu-bandeau-sorties" style="display:flex; gap:10px; overflow-x:auto;"></div>
 </div>
+
+<!-- Bandeau droite : total cartes permanent -->
+<div id="bandeau-total" style="position: fixed; top: 70px; right: 20px; background: rgba(255,255,255,0.95); border: 2px solid #ff69b4; border-radius: 12px; padding: 5px 10px; font-size: 14px; z-index: 9999; font-weight:bold;">
+  Total cartes : <span id="total-cartes">0</span>
+</div>
+
 
 
 <div id="controls">
@@ -497,18 +503,16 @@ function renderCardHTML(c,index){
   </div>`;
 }
 
-// === Bandeau temporaire
-function afficherBandeauSheet(){
-  const bandeau = document.getElementById("bandeau");
-  const contenu = document.getElementById("contenu-bandeau");
-  const totalDiv = document.getElementById("bandeau-droite");
+// === Bandeau sorties temporaires
+function afficherBandeauSorties(){
+  const bandeau = document.getElementById("bandeau-sorties");
+  const contenu = document.getElementById("contenu-bandeau-sorties");
   contenu.innerHTML = "";
 
-  // Sorties à venir
   const sorties = [
     { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
     { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
-    { serie: "Pokemon", date: "vendredi 14 novembre 2025" },
+    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
     { serie: "Magic", date: "vendredi 21 novembre 2025" }
   ];
 
@@ -521,13 +525,43 @@ function afficherBandeauSheet(){
     contenu.appendChild(div);
   });
 
-  // Calcul du total des cartes (colonne "nombre")
-  const totalCartes = allCards.reduce((sum, c) => sum + (parseInt(c.nombre) || 0), 0);
-  totalDiv.textContent = `Total cartes : ${totalCartes}`;
-
   bandeau.style.display = "flex";
-  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 minutes
+  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // disparaît après 2 min
 }
+
+// === Bandeau total permanent
+function afficherTotalCartes(){
+  const totalSpan = document.getElementById("total-cartes");
+  const total = allCards.reduce((sum,c)=>sum + (parseInt(c.nombre)||0), 0);
+  totalSpan.textContent = total;
+}
+
+// Appel des fonctions après chargement des cartes
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    allCards = json.table.rows.map(row => ({
+      serie: row.c[0]?.v || "",
+      nomSet: row.c[1]?.v || "",
+      booster: row.c[2]?.v || "",
+      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString() : ""),
+      date: row.c[4]?.f || "",
+      langue: row.c[5]?.v || "",
+      type: row.c[6]?.v || "",
+      nombre: row.c[7]?.f || "",
+      code: row.c[8]?.v || "",
+      image: row.c[9]?.v || "",
+      pdf: row.c[10]?.v || "",
+      imageOriginal: row.c[11]?.v || "",
+      prixAchat: row.c[12]?.v || "",
+      prixActuel: row.c[13]?.v || ""
+    }));
+
+    afficherBandeauSorties(); // bandeau temporaire
+    afficherTotalCartes();    // bandeau permanent
+  });
+
 
 
 // === Lightbox
@@ -613,4 +647,5 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
