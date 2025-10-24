@@ -4,316 +4,59 @@
 <meta charset="UTF-8">
 <title>Ma Collection de Boosters</title>
 <style>
-/* Polices */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #ffe4e1;
-  color: #333;
-  padding-top: 60px; /* éviter contenu sous navbar */
-}
+body { font-family: 'Arial', sans-serif; margin:0; padding:0; background:#ffe4e1; color:#333; padding-top:60px;}
+header {text-align:center; padding:20px; background:linear-gradient(135deg, #f8cdda, #1d2b64); color:white; border-bottom:4px solid #f8cdda;}
+header img { max-width:150px; border:3px solid white; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+h1 { font-family: 'Press Start 2P', cursive; font-size:1.5em; margin:10px 0 0 0; text-shadow:2px 2px #ffb6c1;}
+#controls { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:20px auto; max-width:1200px;}
+#controls input, #controls select, #controls button { padding:8px; font-size:0.9em; border-radius:10px; border:2px solid #ffb6c1; outline:none; transition:all 0.3s ease;}
+#controls input:focus, #controls select:focus { border-color:#ff69b4;}
+#controls button { background:#ff69b4; color:white; cursor:pointer; font-weight:bold;}
+#controls button:hover { background:#ff1493;}
+#controls select.activeFilter, #controls input.activeFilter { border-color:#ff1493; background:#fff0f5; box-shadow:0 0 8px rgba(255,105,180,0.5);}
+#seriesButtons { text-align:center; margin-bottom:10px;}
+#seriesButtons button { margin:2px; padding:5px 10px; font-size:0.8em; border-radius:10px; border:2px solid #ff69b4; background:#fff0f5; cursor:pointer; transition:all 0.3s ease;}
+#seriesButtons button.active, #seriesButtons button:hover { background:#ff69b4; color:white; font-weight:bold; transform:scale(1.05);}
+#counter { text-align:center; font-weight:bold; margin-bottom:10px; font-size:1em;}
+#cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; margin:0 auto 40px auto; max-width:1200px;}
+.card { position:relative; width:100%; height:300px; border-radius:15px; overflow:hidden; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:all 0.3s ease; border:3px solid #ffb6c1; background:#fff0f5;}
+.card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.3); transform:translateY(-5px);}
+.card img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.3s ease, transform 0.3s ease;}
+.card:hover img { opacity:0;}
+.card .info { position:absolute; top:0; left:0; width:100%; height:100%; padding:10px; box-sizing:border-box; background:rgba(255,228,225,0.95); opacity:0; overflow-y:auto; transform:translateY(20px); transition:opacity 0.4s ease, transform 0.4s ease; font-size:0.85em;}
+.card:hover .info { opacity:1; transform:translateY(0);}
+.card h3 { margin:0 0 5px; font-size:1em; color:#ff1493; text-shadow:1px 1px #fff;}
+.card p { margin:2px 0; color:#333; line-height:1.2em;}
+.card .info::-webkit-scrollbar { width:8px;}
+.card .info::-webkit-scrollbar-track { background:#ffe4e1; border-radius:10px;}
+.card .info::-webkit-scrollbar-thumb { background:#ff69b4; border-radius:10px;}
 
-header {
-  text-align: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  color: white;
-  border-bottom: 4px solid #f8cdda;
-}
+#lightbox { display:none; position:fixed; z-index:10001; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;}
+#lightbox img { max-width:90%; max-height:80%; border-radius:15px; box-shadow:0 0 25px rgba(255,255,255,0.8); animation:zoomIn 0.25s ease;}
+#closeLightbox { position:absolute; top:20px; right:40px; font-size:40px; font-weight:bold; color:white; cursor:pointer; transition:0.3s; user-select:none;}
+#closeLightbox:hover { color:#ff69b4;}
+#lightboxButtons { margin-top:20px; display:flex; gap:15px; flex-wrap:wrap; justify-content:center;}
+#lightboxButtons button { padding:10px 15px; border:none; border-radius:10px; background:#ff69b4; color:white; font-size:0.9em; font-weight:bold; cursor:pointer; transition:background 0.3s ease, transform 0.2s ease;}
+#lightboxButtons button:hover { background:#ff1493; transform:scale(1.1);}
+@keyframes zoomIn { from { transform: scale(0.9); opacity:0;} to { transform:scale(1); opacity:1;}}
 
-header img {
-  max-width: 150px;
-  border: 3px solid white;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
+#btnStats { display:inline-block; text-decoration:none; padding:8px 15px; font-size:0.9em; border-radius:10px; border:2px solid #ffb6c1; background:#ff69b4; color:white; font-weight:bold; transition:all 0.3s ease;}
+#btnStats:hover { background:#ff1493; transform:scale(1.05);}
 
-h1 {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 1.5em;
-  margin: 10px 0 0 0;
-  text-shadow: 2px 2px #ffb6c1;
-}
+#navbar { position:fixed; top:0; left:0; width:100%; background:linear-gradient(135deg, #f8cdda, #1d2b64); padding:10px 0; display:flex; justify-content:center; gap:20px; z-index:10000; box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+#navbar a { color:white; font-weight:bold; text-decoration:none; padding:8px 15px; border-radius:10px; transition:background 0.3s ease, transform 0.2s ease;}
+#navbar a:hover { background:rgba(255,105,180,0.7); transform:scale(1.05);}
+.fullscreen-active #navbar { display:none !important;}
 
-#controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px auto;
-  max-width: 1200px;
-}
+#bandeau { position:fixed; top:80px; left:10px; background:rgba(255,255,255,0.95); border:2px solid #ff69b4; border-radius:12px; padding:5px 10px; font-family:Arial, sans-serif; font-size:14px; z-index:9999; display:flex; gap:10px; align-items:center;}
+#bandeau div.sortie { display:flex; align-items:center; gap:5px;}
+#bandeau img { width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid #ccc;}
 
-#controls input, #controls select, #controls button {
-  padding: 8px;
-  font-size: 0.9em;
-  border-radius: 10px;
-  border: 2px solid #ffb6c1;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-#controls input:focus, #controls select:focus {
-  border-color: #ff69b4;
-}
-
-#controls button {
-  background: #ff69b4;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#controls button:hover {
-  background: #ff1493;
-}
-
-#controls select.activeFilter, 
-#controls input.activeFilter {
-  border-color: #ff1493;
-  background: #fff0f5;
-  box-shadow: 0 0 8px rgba(255,105,180,0.5);
-}
-
-#seriesButtons {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-#seriesButtons button {
-  margin: 2px;
-  padding: 5px 10px;
-  font-size: 0.8em;
-  border-radius: 10px;
-  border: 2px solid #ff69b4;
-  background: #fff0f5;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#seriesButtons button.active, #seriesButtons button:hover {
-  background: #ff69b4;
-  color: white;
-  font-weight: bold;
-  transform: scale(1.05);
-}
-
-#counter {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 1em;
-}
-
-#cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin: 0 auto 40px auto;
-  max-width: 1200px;
-}
-
-.card {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  border-radius: 15px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-  border: 3px solid #ffb6c1;
-  background: #fff0f5;
-}
-
-.card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  transform: translateY(-5px);
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.card:hover img {
-  opacity: 0;
-}
-
-.card .info {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  background: rgba(255, 228, 225, 0.95);
-  opacity: 0;
-  overflow-y: auto;
-  transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  font-size: 0.85em;
-}
-
-.card:hover .info {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card h3 {
-  margin: 0 0 5px;
-  font-size: 1em;
-  color: #ff1493;
-  text-shadow: 1px 1px #fff;
-}
-
-.card p {
-  margin: 2px 0;
-  color: #333;
-  line-height: 1.2em;
-}
-
-#lightbox {
-  display: none;
-  position: fixed;
-  z-index: 10001;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85);
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-#lightbox img {
-  max-width: 90%;
-  max-height: 80%;
-  border-radius: 15px;
-  box-shadow: 0 0 25px rgba(255,255,255,0.8);
-  animation: zoomIn 0.25s ease;
-}
-
-#closeLightbox {
-  position: absolute;
-  top: 20px;
-  right: 40px;
-  font-size: 40px;
-  font-weight: bold;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-  user-select: none;
-}
-
-#closeLightbox:hover { color: #ff69b4; }
-
-#lightboxButtons {
-  margin-top: 20px;
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-#lightboxButtons button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 10px;
-  background: #ff69b4;
-  color: white;
-  font-size: 0.9em;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-#lightboxButtons button:hover { background: #ff1493; transform: scale(1.1); }
-
-@keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-#btnStats {
-  display: inline-block;
-  text-decoration: none;
-  padding: 8px 15px;
-  font-size: 0.9em;
-  border-radius: 10px;
-  border: 2px solid #ffb6c1;
-  background: #ff69b4;
-  color: white;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-#btnStats:hover { background: #ff1493; transform: scale(1.05); }
-
-#navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  padding: 10px 0;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  z-index: 10000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-#navbar a {
-  color: white;
-  font-weight: bold;
-  text-decoration: none;
-  padding: 8px 15px;
-  border-radius: 10px;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-#navbar a:hover { background: rgba(255,105,180,0.7); transform: scale(1.05); }
-
-.fullscreen-active #navbar { display: none !important; }
-
-#bandeau {
-  position: fixed;
-  top: 60px; left: 50px;
-  background: rgba(255,255,255,0.95);
-  border: 2px solid #ff69b4;
-  border-radius: 12px;
-  padding: 5px 10px;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  z-index: 9999;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-#bandeau div.sortie {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-#bandeau img {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #ccc;
-}
 </style>
 </head>
 <body>
-
 <nav id="navbar">
   <a href="index.html">📂 Collection</a>
   <a href="stats.html">📊 Statistiques</a>
@@ -342,6 +85,7 @@ h1 {
 <div id="counter"></div>
 <div id="cards">Chargement…</div>
 
+<!-- Lightbox -->
 <div id="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
   <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
   <img id="lightboxImg" src="" alt="Image en grand">
@@ -355,58 +99,65 @@ h1 {
 </div>
 
 <script>
-const allCardsSheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json&gid=658465532";
-const statsSheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json&gid=STATS_GID";
+const sheetURL = "https://docs.google.com/spreadsheets/d/TON_ID/gviz/tq?tqx=out:json&gid=658465532";
+let allCards = [];
+let currentCards = [];
+let currentIndex = 0;
+let activeSerie = null;
 
-let allCards=[], currentCards=[], currentIndex=0, activeSerie=null;
+fetch(sheetURL)
+  .then(res=>res.text())
+  .then(text=>{
+    const json = JSON.parse(text.substr(47).slice(0,-2));
+    allCards = json.table.rows.map(row=>({
+      serie: row.c[0]?.v || "",
+      nomSet: row.c[1]?.v || "",
+      booster: row.c[2]?.v || "",
+      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString():""),
+      date: row.c[4]?.f || "",
+      langue: row.c[5]?.v || "",
+      type: row.c[6]?.v || "",
+      nombre: row.c[7]?.f || "",
+      code: row.c[8]?.v || "",
+      image: row.c[9]?.v || "",
+      pdf: row.c[10]?.v || "",
+      imageOriginal: row.c[11]?.v || "",
+      prixAchat: row.c[12]?.v || "",
+      prixActuel: row.c[13]?.v || ""
+    }));
+    fillFilter("filterNomSet", allCards.map(c=>c.nomSet));
+    fillFilter("filterType", allCards.map(c=>c.type));
+    fillFilter("filterBooster", allCards.map(c=>c.booster));
+    fillFilter("filterLangue", allCards.map(c=>c.langue));
+    fillFilter("filterAnnee", allCards.map(c=>c.annee));
+    createSeriesButtons();
+    renderCards();
 
-function fetchAllCards(){
-  return fetch(allCardsSheet).then(r=>r.text())
-    .then(t=>{
-      const json=JSON.parse(t.substr(47).slice(0,-2));
-      allCards=json.table.rows.map(r=>({
-        serie:r.c[0]?.v||"",
-        nomSet:r.c[1]?.v||"",
-        booster:r.c[2]?.v||"",
-        annee:r.c[3]?.f?new Date(r.c[3].f).getFullYear().toString():r.c[3]?.v||"",
-        date:r.c[4]?.f||"",
-        langue:r.c[5]?.v||"",
-        type:r.c[6]?.v||"",
-        nombre:r.c[7]?.f||"",
-        code:r.c[8]?.v||"",
-        image:r.c[9]?.v||"",
-        pdf:r.c[10]?.v||"",
-        imageOriginal:r.c[11]?.v||"",
-        prixAchat:r.c[12]?.v||"",
-        prixActuel:r.c[13]?.v||""
-      }));
-    });
-}
+    // ✅ Affiche le bandeau après avoir chargé toutes les cartes
+    afficherBandeauSheet();
+  });
 
-// Remplir filtres
 function fillFilter(id, values){
-  const select=document.getElementById(id);
-  let unique=[...new Set(values.filter(v=>v))];
-  if(id==="filterAnnee") unique.sort((a,b)=>parseInt(a)-parseInt(b));
-  else unique.sort();
-  unique.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;select.appendChild(o)});
+  const select = document.getElementById(id);
+  const unique = [...new Set(values.filter(v=>v))];
+  if(id==="filterAnnee") unique.sort((a,b)=>parseInt(a)-parseInt(b)); else unique.sort();
+  unique.forEach(v=>{ const option=document.createElement("option"); option.value=v; option.textContent=v; select.appendChild(option); });
 }
 
 function createSeriesButtons(){
   const container=document.getElementById("seriesButtons");
   container.innerHTML="";
   const series=[...new Set(allCards.map(c=>c.serie).filter(s=>s))].sort();
-  const allBtn=document.createElement("button");
-  allBtn.textContent="Toutes";
-  allBtn.addEventListener("click",()=>{
+  const allBtn=document.createElement("button"); allBtn.textContent="Toutes";
+  allBtn.addEventListener("click", ()=>{
     container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-    allBtn.classList.add("active"); renderCards();
+    allBtn.classList.add("active");
+    renderCards();
   });
   container.appendChild(allBtn);
   series.forEach(s=>{
-    const btn=document.createElement("button");
-    btn.textContent=s;
-    btn.addEventListener("click",()=>{
+    const btn=document.createElement("button"); btn.textContent=s;
+    btn.addEventListener("click", ()=>{
       container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       renderCardsBySerie(s);
@@ -416,17 +167,17 @@ function createSeriesButtons(){
 }
 
 function renderCardsBySerie(serieName){
-  activeSerie=serieName;
-  const filtered=allCards.filter(c=>c.serie===serieName);
+  activeSerie = serieName;
+  const filtered = allCards.filter(c=>c.serie===serieName);
   document.getElementById("counter").textContent=`Boosters dans "${serieName}" : ${filtered.length} / ${allCards.length}`;
   const container=document.getElementById("cards");
-  container.innerHTML=filtered.length?filtered.map((c,i)=>renderCardHTML(c,i)).join(""):"<p>Aucune carte trouvée.</p>";
+  container.innerHTML=filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
 function renderCardHTML(c,index){
-  const img=c.image||"https://via.placeholder.com/400x600?text=Pas+d'image";
+  const imgSrc=c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
   return `<div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-index="${index}">
-    <img src="${img}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
+    <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
     <div class="info">
       <h3>${c.nomSet}</h3>
       <p><b>Série :</b> ${c.serie}</p>
@@ -439,21 +190,37 @@ function renderCardHTML(c,index){
   </div>`;
 }
 
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", e=>{
+    e.target.classList.toggle("activeFilter", e.target.value!=="");
+    renderCards();
+  });
+});
+
+document.getElementById("resetFilters").addEventListener("click", ()=>{
+  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
+    document.getElementById(id).value=""; document.getElementById(id).classList.remove("activeFilter");
+  });
+  document.querySelectorAll("#seriesButtons button").forEach(b=>b.classList.remove("active"));
+  renderCards();
+});
+
 function getFilteredCards(){
-  const s=document.getElementById("search").value.toLowerCase();
-  const nomSet=document.getElementById("filterNomSet").value;
-  const type=document.getElementById("filterType").value;
-  const booster=document.getElementById("filterBooster").value;
-  const langue=document.getElementById("filterLangue").value;
-  const annee=document.getElementById("filterAnnee").value;
+  const searchText=document.getElementById("search").value.toLowerCase();
+  const nomSetFilter=document.getElementById("filterNomSet").value;
+  const typeFilter=document.getElementById("filterType").value;
+  const boosterFilter=document.getElementById("filterBooster").value;
+  const langueFilter=document.getElementById("filterLangue").value;
+  const anneeFilter=document.getElementById("filterAnnee").value;
+
   return allCards.filter(c=>{
     const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
-    return fields.some(f=>(f||"").toString().toLowerCase().includes(s)) &&
-           (nomSet?c.nomSet===nomSet:true) &&
-           (type?c.type===type:true) &&
-           (booster?c.booster===booster:true) &&
-           (langue?c.langue===langue:true) &&
-           (annee?c.annee===annee:true);
+    const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) &&
+           (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) &&
+           (langueFilter?c.langue===langueFilter:true) &&
+           (anneeFilter?c.annee===anneeFilter:true);
   });
 }
 
@@ -461,118 +228,86 @@ function renderCards(){
   activeSerie=null;
   const filtered=getFilteredCards();
   document.getElementById("counter").textContent=`Boosters : ${filtered.length} / ${allCards.length}`;
-  const container=document.getElementById("cards");
-  container.innerHTML=filtered.length?filtered.map((c,i)=>renderCardHTML(c,i)).join(""):"<p>Aucune carte trouvée.</p>";
+  document.getElementById("cards").innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
-// Événements filtres
-["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
-  document.getElementById(id).addEventListener("input",e=>{
-    e.target.classList.toggle("activeFilter",e.target.value!==""); renderCards();
-  });
-});
+// === Lightbox ===
+const lightbox=document.getElementById("lightbox");
+const lightboxImg=document.getElementById("lightboxImg");
+const closeLightboxBtn=document.getElementById("closeLightbox");
+const btnPdf=document.getElementById("btnPdf");
+const btnImg=document.getElementById("btnImg");
+const btnPrev=document.getElementById("btnPrev");
+const btnNext=document.getElementById("btnNext");
+const btnZoom=document.getElementById("btnZoom");
 
-document.getElementById("resetFilters").addEventListener("click",()=>{
-  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
-    document.getElementById(id).value="";
-    document.getElementById(id).classList.remove("activeFilter");
-  });
-  document.querySelectorAll("#seriesButtons button").forEach(b=>b.classList.remove("active"));
-  renderCards();
-});
-
-// Lightbox
-const lightbox=document.getElementById("lightbox"), lbImg=document.getElementById("lightboxImg");
-const closeBtn=document.getElementById("closeLightbox");
-const btnPdf=document.getElementById("btnPdf"), btnImg=document.getElementById("btnImg");
-const btnPrev=document.getElementById("btnPrev"), btnNext=document.getElementById("btnNext"), btnZoom=document.getElementById("btnZoom");
-
-document.getElementById("cards").addEventListener("click",e=>{
+document.getElementById("cards").addEventListener("click", e=>{
   const card=e.target.closest(".card"); if(!card) return;
   const index=parseInt(card.dataset.index);
-  currentCards=activeSerie?allCards.filter(c=>c.serie===activeSerie):getFilteredCards();
+  currentCards = activeSerie ? allCards.filter(c=>c.serie===activeSerie) : getFilteredCards();
   currentIndex=index; openLightbox();
 });
 
 function openLightbox(){
-  if(currentIndex<0||currentIndex>=currentCards.length) return;
+  if(currentIndex<0 || currentIndex>=currentCards.length) return;
   const c=currentCards[currentIndex];
-  lbImg.src=c.image||"https://via.placeholder.com/400x600?text=Pas+d'image";
-  lbImg.alt=c.nomSet;
+  lightboxImg.src=c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+  lightboxImg.alt=c.nomSet;
   btnPdf.style.display=c.pdf?"inline-block":"none";
   btnImg.style.display=c.imageOriginal?"inline-block":"none";
   if(c.pdf) btnPdf.onclick=()=>window.open(c.pdf,"_blank");
-  if(c.imageOriginal){
-    btnImg.onclick=()=>{
-      const original=lbImg.dataset.mode==="original";
-      lbImg.src=original?c.image:c.imageOriginal;
-      lbImg.dataset.mode=original?"normal":"original";
-    };
-  }
+  if(c.imageOriginal) btnImg.onclick=()=>{
+    const isOriginal=lightboxImg.dataset.mode==="original";
+    lightboxImg.src=isOriginal?c.image:c.imageOriginal;
+    lightboxImg.dataset.mode=isOriginal?"normal":"original";
+  };
   lightbox.style.display="flex";
   document.body.classList.add("fullscreen-active");
 }
 
-function closeLightboxFn(){lightbox.style.display="none";document.body.classList.remove("fullscreen-active");lbImg.src="";}
-closeBtn.addEventListener("click",closeLightboxFn);
-lightbox.addEventListener("click",e=>{if(e.target===lightbox) closeLightboxFn();});
-btnPrev.addEventListener("click",()=>{if(currentCards.length){currentIndex=(currentIndex-1+currentCards.length)%currentCards.length;openLightbox();}});
-btnNext.addEventListener("click",()=>{if(currentCards.length){currentIndex=(currentIndex+1)%currentCards.length;openLightbox();}});
-btnZoom.addEventListener("click",()=>{if(document.fullscreenElement) document.exitFullscreen();else lbImg.requestFullscreen();});
-window.addEventListener("keydown",e=>{
-  if(lightbox.style.display==="flex"){
-    if(e.key==="Escape") closeLightboxFn();
-    else if(e.key==="ArrowLeft") btnPrev.click();
-    else if(e.key==="ArrowRight") btnNext.click();
-  }
-});
+function closeLightboxFn(){ lightbox.style.display="none"; document.body.classList.remove("fullscreen-active"); lightboxImg.src=""; }
+closeLightboxBtn.addEventListener("click",closeLightboxFn);
+lightbox.addEventListener("click", e=>{if(e.target===lightbox) closeLightboxFn();});
+btnPrev.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex-1+currentCards.length)%currentCards.length; openLightbox();}});
+btnNext.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex+1)%currentCards.length; openLightbox();}});
+btnZoom.addEventListener("click", ()=>{ if(document.fullscreenElement) document.exitFullscreen(); else lightboxImg.requestFullscreen();});
 
-// Bandeau Stats
+// === Bandeau dynamique Stats ===
 function afficherBandeauSheet(){
   const bandeau=document.getElementById("bandeau");
   const contenu=document.getElementById("contenu-bandeau");
   contenu.innerHTML="";
-  fetch(statsSheet).then(r=>r.text()).then(t=>{
-    const json=JSON.parse(t.substr(47).slice(0,-2));
-    const rows=json.table.rows.slice(26); // ligne 27
-    rows.forEach(r=>{
-      const serie=r.c[0]?.v;
-      const nomSortie=r.c[1]?.v;
-      const date=r.c[2]?.v;
-      if(serie && nomSortie && date){
+  const statsURL="https://docs.google.com/spreadsheets/d/TON_ID/gviz/tq?tqx=out:json&sheet=Stats";
+
+  fetch(statsURL)
+    .then(res=>res.text())
+    .then(text=>{
+      const json=JSON.parse(text.substr(47).slice(0,-2));
+      const rows=json.table.rows.slice(26);
+      rows.forEach(row=>{
+        const serie=row.c[0]?.v;
+        const nomSortie=row.c[1]?.v;
+        const date=row.c[2]?.v;
+        if(!serie || !nomSortie || !date) return;
         const imagesSerie=allCards.filter(c=>c.serie===serie && c.image).map(c=>c.image);
-        const imgSrc=imagesSerie.length?imagesSerie[Math.floor(Math.random()*imagesSerie.length)]:"https://via.placeholder.com/24";
+        const imgSrc=imagesSerie.length ? imagesSerie[Math.floor(Math.random()*imagesSerie.length)] : "https://via.placeholder.com/24";
         const div=document.createElement("div");
         div.className="sortie";
-        div.innerHTML=`<img src="${imgSrc}" alt="${serie}"> <strong>${serie}</strong> : ${nomSortie} - ${date}`;
+        div.innerHTML=`<img src="${imgSrc}" alt="${serie}"> <strong>${serie}:</strong> ${nomSortie} - ${date}`;
         contenu.appendChild(div);
-      }
-    });
-    bandeau.style.display="flex";
-    setTimeout(()=>{bandeau.style.display="none";},120000);
-  }).catch(err=>console.error("Erreur bandeau Stats :",err));
+      });
+      if(contenu.children.length){ bandeau.style.display="flex"; setTimeout(()=>{ bandeau.style.display="none"; }, 120000);}
+    })
+    .catch(err=>{ console.error("Erreur bandeau Stats :",err); bandeau.style.display="none"; });
 }
 
-// Mot de passe stats
-document.querySelector('a[href="stats.html"]').addEventListener('click',function(e){
+// Mot de passe pour Stats
+document.querySelector('a[href="stats.html"]').addEventListener('click', function(e){
   e.preventDefault();
   const pass=prompt("🔒 Entrez le mot de passe pour accéder aux statistiques :");
   if(pass==="booster") window.location.href="stats.html";
   else if(pass!==null) alert("❌ Mot de passe incorrect !");
 });
-
-// Initialisation
-fetchAllCards().then(()=>{
-  fillFilter("filterNomSet", allCards.map(c=>c.nomSet));
-  fillFilter("filterType", allCards.map(c=>c.type));
-  fillFilter("filterBooster", allCards.map(c=>c.booster));
-  fillFilter("filterLangue", allCards.map(c=>c.langue));
-  fillFilter("filterAnnee", allCards.map(c=>c.annee));
-  createSeriesButtons();
-  renderCards();
-  afficherBandeauSheet();
-});
 </script>
-
 </body>
 </html>
