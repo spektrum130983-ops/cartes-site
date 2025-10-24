@@ -266,7 +266,7 @@ fetch(sheetURL)
       imageOriginal: row.c[11]?.v || "",
       prixAchat: row.c[12]?.v || "",
       prixActuel: row.c[13]?.v || "",
-      bandeau: row.c[14]?.v || "" // <-- Colonne P pour le bandeau
+      bandeau: row.c[15]?.v || "" // <-- Colonne P pour le bandeau
     }));
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
     fillFilter("filterType", allCards.map(c => c.type));
@@ -377,3 +377,4 @@ btnZoom.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();els
 </script>
 </body>
 </html>
+
