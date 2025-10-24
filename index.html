@@ -533,7 +533,21 @@ function openLightbox() {
   btnPdf.style.display = c.pdf ? "inline-block" : "none";
   btnImg.style.display = c.imageOriginal ? "inline-block" : "none";
   if(c.pdf) btnPdf.onclick = ()=>window.open(c.pdf,"_blank");
-  if(c.imageOriginal) btnImg.onclick = ()=>window.open(c.imageOriginal,"_blank");
+
+if(c.imageOriginal) {
+  btnImg.onclick = ()=>{
+    // alterne entre image normale et image originale
+    const isOriginal = lightboxImg.dataset.mode === "original";
+    if(isOriginal){
+      lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+      lightboxImg.dataset.mode = "normal";
+    } else {
+      lightboxImg.src = c.imageOriginal;
+      lightboxImg.dataset.mode = "original";
+    }
+  };
+}
+
   lightbox.style.display = "flex";
   document.body.classList.add("fullscreen-active");
 }
@@ -561,3 +575,4 @@ window.addEventListener("keydown", e=>{
 
 </body>
 </html>
+
