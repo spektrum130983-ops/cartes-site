@@ -10,7 +10,7 @@
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 60px 0 0 0; /* éviter contenu sous navbar */
   background: #ffe4e1;
   color: #333;
 }
@@ -35,6 +35,34 @@ h1 {
   font-size: 1.5em;
   margin: 10px 0 0 0;
   text-shadow: 2px 2px #ffb6c1;
+}
+
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#navbar a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#navbar a:hover {
+  background: rgba(255,105,180,0.7);
+  transform: scale(1.05);
 }
 
 #controls {
@@ -194,7 +222,7 @@ h1 {
 #lightbox {
   display: none;
   position: fixed;
-  z-index: 10001; /* au-dessus navbar */
+  z-index: 10001; 
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: rgba(0,0,0,0.85);
@@ -257,65 +285,10 @@ h1 {
   to { transform: scale(1); opacity: 1; }
 }
 
-@media (max-width: 480px) {
-  #closeLightbox { right: 16px; top: 12px; font-size: 32px; }
-  .card { height: 260px; }
-}
-
-#btnStats {
-  display: inline-block;
-  text-decoration: none;
-  padding: 8px 15px;
-  font-size: 0.9em;
-  border-radius: 10px;
-  border: 2px solid #ffb6c1;
-  background: #ff69b4;
-  color: white;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-#btnStats:hover {
-  background: #ff1493;
-  transform: scale(1.05);
-}
-
-#navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  padding: 10px 0;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  z-index: 10000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-#navbar a {
-  color: white;
-  font-weight: bold;
-  text-decoration: none;
-  padding: 8px 15px;
-  border-radius: 10px;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-#navbar a:hover {
-  background: rgba(255,105,180,0.7);
-  transform: scale(1.05);
-}
-
-.fullscreen-active #navbar {
-  display: none !important;
-}
-
 #bandeau {
   position: fixed;
-  top: 60px;   /* sous le menu */
-  left: 20px;  /* légèrement à gauche */
-  transform: none;
+  top: 70px;
+  left: 20px;
   background: rgba(255,255,255,0.95);
   border: 2px solid #ff69b4;
   border-radius: 12px;
@@ -335,22 +308,17 @@ h1 {
 }
 
 #bandeau img {
-  width: 24px;         /* mini-image */
+  width: 24px;
   height: 24px;
-  border-radius: 50%;  /* ronde */
+  border-radius: 50%;
   object-fit: cover;
   border: 1px solid #ccc;
 }
 
-
-
-  
-body {
-  padding-top: 60px; /* éviter contenu sous navbar */
-}
 </style>
 </head>
 <body>
+
 <nav id="navbar">
   <a href="index.html">📂 Collection</a>
   <a href="stats.html">📊 Statistiques</a>
@@ -360,7 +328,7 @@ body {
   <img src="https://i.postimg.cc/wvPSqDzq/logo.jpg" alt="Logo Manga">
   <h1>Ma Collection de Boosters</h1>
 </header>
-  
+
 <div id="bandeau" style="display: none;">
   <div id="contenu-bandeau"></div>
 </div>
@@ -373,7 +341,6 @@ body {
   <select id="filterLangue"><option value="">Toutes les langues</option></select>
   <select id="filterAnnee"><option value="">Toutes les années</option></select>
   <button id="resetFilters">Réinitialiser</button>
-  
 </div>
 
 <div id="seriesButtons"></div>
@@ -398,8 +365,9 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBl
 let allCards = [];
 let currentCards = [];
 let currentIndex = 0;
-let activeSerie = null; // ✅ mémorise si une série est sélectionnée
+let activeSerie = null;
 
+// === Charger les données depuis Sheets
 fetch(sheetURL)
   .then(res => res.text())
   .then(text => {
@@ -429,12 +397,14 @@ fetch(sheetURL)
 
     createSeriesButtons();
     renderCards();
+    afficherBandeauSheet();
   })
   .catch(err => {
     console.error("Erreur de chargement:", err);
     document.getElementById("cards").innerHTML = "Impossible de charger les données.<br>" + err;
   });
 
+// === Fonctions utilitaires
 function fillFilter(selectId, values) {
   const select = document.getElementById(selectId);
   let unique = [...new Set(values.filter(v => v))];
@@ -453,7 +423,7 @@ function createSeriesButtons() {
   const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
   const allBtn = document.createElement("button");
   allBtn.textContent = "Toutes";
-  allBtn.addEventListener("click", ()=>{
+  allBtn.addEventListener("click", ()=> {
     container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
     allBtn.classList.add("active");
     renderCards();
@@ -462,7 +432,7 @@ function createSeriesButtons() {
   series.forEach(s => {
     const btn = document.createElement("button");
     btn.textContent = s;
-    btn.addEventListener("click", ()=>{
+    btn.addEventListener("click", ()=> {
       container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       renderCardsBySerie(s);
@@ -471,19 +441,45 @@ function createSeriesButtons() {
   });
 }
 
-function renderCardsBySerie(serieName) {
-  activeSerie = serieName; // ✅ indique la série active
-  const filtered = allCards.filter(c => c.serie === serieName);
-  const total = allCards.length;
-  document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${total}`;
+function getFilteredCards() {
+  const searchText = document.getElementById("search").value.toLowerCase();
+  const nomSetFilter = document.getElementById("filterNomSet").value;
+  const typeFilter = document.getElementById("filterType").value;
+  const boosterFilter = document.getElementById("filterBooster").value;
+  const langueFilter = document.getElementById("filterLangue").value;
+  const anneeFilter = document.getElementById("filterAnnee").value;
+
+  return allCards.filter(c => {
+    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
+    const matchesSearch = fields.some(f => (f||"").toString().toLowerCase().includes(searchText));
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) &&
+           (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) &&
+           (langueFilter?c.langue===langueFilter:true) &&
+           (anneeFilter?c.annee===anneeFilter:true);
+  });
+}
+
+function renderCards() {
+  activeSerie = null;
+  const filtered = getFilteredCards();
+  document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${allCards.length}`;
   const container = document.getElementById("cards");
   container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
 }
 
-function renderCardHTML(c, index) {
+function renderCardsBySerie(serieName) {
+  activeSerie = serieName;
+  const filtered = allCards.filter(c => c.serie === serieName);
+  document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${allCards.length}`;
+  const container = document.getElementById("cards");
+  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
+}
+
+function renderCardHTML(c,index){
   const imgSrc = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
-  return `<div class="card" role="button" aria-label="Ouvrir ${c.nomSet}" data-index="${index}">
-    <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Pas+d\\'image'">
+  return `<div class="card" data-index="${index}">
+    <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy">
     <div class="info">
       <h3>${c.nomSet}</h3>
       <p><b>Série :</b> ${c.serie}</p>
@@ -496,6 +492,88 @@ function renderCardHTML(c, index) {
   </div>`;
 }
 
+// === Bandeau temporaire
+function afficherBandeauSheet(){
+  const bandeau = document.getElementById("bandeau");
+  const contenu = document.getElementById("contenu-bandeau");
+  contenu.innerHTML = "";
+
+  const sorties = [
+    { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
+    { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
+    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
+    { serie: "Magic", date: "vendredi 21 novembre 2025" }
+  ];
+
+  sorties.forEach(s => {
+    const card = allCards.find(c => c.serie.trim().toLowerCase() === s.serie.trim().toLowerCase());
+    const imgSrc = card && card.image ? card.image : "https://via.placeholder.com/24";
+    const div = document.createElement("div");
+    div.className = "sortie";
+    div.innerHTML = `<img src="${imgSrc}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
+    contenu.appendChild(div);
+  });
+
+  bandeau.style.display = "flex";
+  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 min
+}
+
+// === Lightbox
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const closeLightboxBtn = document.getElementById("closeLightbox");
+const btnPdf = document.getElementById("btnPdf");
+const btnImg = document.getElementById("btnImg");
+const btnPrev = document.getElementById("btnPrev");
+const btnNext = document.getElementById("btnNext");
+const btnZoom = document.getElementById("btnZoom");
+
+document.getElementById("cards").addEventListener("click", e=>{
+  const card = e.target.closest(".card");
+  if(!card) return;
+  const index = parseInt(card.dataset.index);
+  currentCards = activeSerie ? allCards.filter(c=>c.serie===activeSerie) : getFilteredCards();
+  currentIndex = index;
+  openLightbox();
+});
+
+function openLightbox(){
+  if(currentIndex<0 || currentIndex>=currentCards.length) return;
+  const c = currentCards[currentIndex];
+  lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+  lightboxImg.alt = c.nomSet;
+  btnPdf.style.display = c.pdf ? "inline-block":"none";
+  btnImg.style.display = c.imageOriginal ? "inline-block":"none";
+  if(c.pdf) btnPdf.onclick=()=>window.open(c.pdf,"_blank");
+  if(c.imageOriginal) btnImg.onclick=()=>{
+    const isOriginal = lightboxImg.dataset.mode==="original";
+    if(isOriginal){ lightboxImg.src = c.image; lightboxImg.dataset.mode="normal";}
+    else { lightboxImg.src = c.imageOriginal; lightboxImg.dataset.mode="original"; }
+  };
+  lightbox.style.display="flex";
+  document.body.classList.add("fullscreen-active");
+}
+
+function closeLightboxFn(){
+  lightbox.style.display="none";
+  document.body.classList.remove("fullscreen-active");
+  lightboxImg.src="";
+}
+
+closeLightboxBtn.addEventListener("click", closeLightboxFn);
+lightbox.addEventListener("click", e=>{ if(e.target===lightbox) closeLightboxFn(); });
+btnPrev.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex-1+currentCards.length)%currentCards.length; openLightbox();} });
+btnNext.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex+1)%currentCards.length; openLightbox();} });
+btnZoom.addEventListener("click", ()=>{ if(document.fullscreenElement) document.exitFullscreen(); else lightboxImg.requestFullscreen(); });
+window.addEventListener("keydown", e=>{
+  if(lightbox.style.display==="flex"){
+    if(e.key==="Escape") closeLightboxFn();
+    else if(e.key==="ArrowLeft") btnPrev.click();
+    else if(e.key==="ArrowRight") btnNext.click();
+  }
+});
+
+// === Filtre et reset
 ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
   document.getElementById(id).addEventListener("input", e=>{
     e.target.classList.toggle("activeFilter", e.target.value!=="");
@@ -512,183 +590,14 @@ document.getElementById("resetFilters").addEventListener("click", ()=>{
   renderCards();
 });
 
-function getFilteredCards() {
-  const searchText = document.getElementById("search").value.toLowerCase();
-  const nomSetFilter = document.getElementById("filterNomSet").value;
-  const typeFilter = document.getElementById("filterType").value;
-  const boosterFilter = document.getElementById("filterBooster").value;
-  const langueFilter = document.getElementById("filterLangue").value;
-  const anneeFilter = document.getElementById("filterAnnee").value;
-
-  return allCards.filter(c=>{
-    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
-    const matchesSearch = fields.some(f=>(f||"").toString().toLowerCase().includes(searchText));
-    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) &&
-           (typeFilter?c.type===typeFilter:true) &&
-           (boosterFilter?c.booster===boosterFilter:true) &&
-           (langueFilter?c.langue===langueFilter:true) &&
-           (anneeFilter?c.annee===anneeFilter:true);
-  });
-}
-
-function renderCards() {
-  activeSerie = null; // ✅ désactive la série si on filtre
-  const filtered = getFilteredCards();
-  const total = allCards.length;
-  document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${total}`;
-  const container = document.getElementById("cards");
-  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
-}
-
-// === Lightbox ===
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightboxImg");
-const closeLightboxBtn = document.getElementById("closeLightbox");
-const btnPdf = document.getElementById("btnPdf");
-const btnImg = document.getElementById("btnImg");
-const btnPrev = document.getElementById("btnPrev");
-const btnNext = document.getElementById("btnNext");
-const btnZoom = document.getElementById("btnZoom");
-
-document.getElementById("cards").addEventListener("click", e=>{
-  const card = e.target.closest(".card");
-  if(!card) return;
-  const index = parseInt(card.dataset.index);
-
-  // ✅ bon jeu de données selon contexte
-  if(activeSerie) currentCards = allCards.filter(c => c.serie === activeSerie);
-  else currentCards = getFilteredCards();
-
-  currentIndex = index;
-  openLightbox();
-});
-
-function openLightbox() {
-  if(currentIndex<0 || currentIndex>=currentCards.length) return;
-  const c = currentCards[currentIndex];
-  lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
-  lightboxImg.alt = c.nomSet;
-  btnPdf.style.display = c.pdf ? "inline-block" : "none";
-  btnImg.style.display = c.imageOriginal ? "inline-block" : "none";
-  if(c.pdf) btnPdf.onclick = ()=>window.open(c.pdf,"_blank");
-
-if(c.imageOriginal) {
-  btnImg.onclick = ()=>{
-    // alterne entre image normale et image originale
-    const isOriginal = lightboxImg.dataset.mode === "original";
-    if(isOriginal){
-      lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
-      lightboxImg.dataset.mode = "normal";
-    } else {
-      lightboxImg.src = c.imageOriginal;
-      lightboxImg.dataset.mode = "original";
-    }
-  };
-}
-
-  lightbox.style.display = "flex";
-  document.body.classList.add("fullscreen-active");
-}
-
-function closeLightboxFn() {
-  lightbox.style.display="none";
-  document.body.classList.remove("fullscreen-active");
-  lightboxImg.src="";
-}
-
-closeLightboxBtn.addEventListener("click", closeLightboxFn);
-lightbox.addEventListener("click", e=>{ if(e.target===lightbox) closeLightboxFn(); });
-btnPrev.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex = (currentIndex-1+currentCards.length)%currentCards.length; openLightbox(); } });
-btnNext.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex = (currentIndex+1)%currentCards.length; openLightbox(); } });
-btnZoom.addEventListener("click", ()=>{ if(document.fullscreenElement) document.exitFullscreen(); else lightboxImg.requestFullscreen(); });
-
-window.addEventListener("keydown", e=>{
-  if(lightbox.style.display==="flex"){
-    if(e.key==="Escape") closeLightboxFn();
-    else if(e.key==="ArrowLeft") btnPrev.click();
-    else if(e.key==="ArrowRight") btnNext.click();
-  }
-});
-
-const sorties = [
-  {
-    serie: "Star Wars",
-    nom: "Secrets du Pouvoir",
-    date: "vendredi 7 novembre 2025",
-    image: "https://starwarsunlimited.com/wp-content/uploads/2025/09/SWU6_SecretsDuPouvoir.jpg"
-  },
-  {
-    serie: "Lorcana",
-    nom: "Lueurs dans les Profondeurs",
-    date: "vendredi 7 novembre 2025",
-    image: "https://www.disneylorcana.com/wp-content/uploads/2025/09/Lorcana_LueursDansLesProfondeurs.jpg"
-  },
-  {
-    serie: "Pokémon",
-    nom: "Flammes Fantasmagoriques",
-    date: "vendredi 14 novembre 2025",
-    image: "https://www.pokemon.com/wp-content/uploads/2025/09/Pokemon_FlammesFantasmagoriques.jpg"
-  },
-  {
-    serie: "Magic",
-    nom: "Avatar, le Dernier Maître de l'Air",
-    date: "vendredi 21 novembre 2025",
-    image: "https://magic.wizards.com/wp-content/uploads/2025/09/MTG_AvatarDernierMaitreAir.jpg"
-  }
-];
-
-
-
-function afficherBandeauSheet() {
-  const bandeau = document.getElementById('bandeau');
-  const contenu = document.getElementById('contenu-bandeau');
-  contenu.innerHTML = ""; // vider avant d'ajouter
-
-  // Récupère les dernières sorties par série
-  const dernieresSorties = [
-    { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
-    { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
-    { serie: "Pokémon", date: "vendredi 14 novembre 2025" },
-    { serie: "Magic", date: "vendredi 21 novembre 2025" }
-  ];
-
-  dernieresSorties.forEach(s => {
-    // Trouve la première carte correspondant à la série
-    const card = allCards.find(c => c.serie === s.serie);
-    if(card && card.image){
-      const div = document.createElement('div');
-      div.className = 'sortie';
-      div.innerHTML = `<img src="${card.image}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
-      contenu.appendChild(div);
-    }
-  });
-
-  bandeau.style.display = 'flex';
-  setTimeout(() => { bandeau.style.display = 'none'; }, 120000); // 2 min
-}
-
-document.addEventListener('DOMContentLoaded', afficherBandeauSheet);
-
-
-</script>
-<script>
-document.querySelector('a[href="stats.html"]').addEventListener('click', function (e) {
-  e.preventDefault(); // empêche la navigation immédiate
+// === Mot de passe pour statistiques
+document.querySelector('a[href="stats.html"]').addEventListener('click', function(e){
+  e.preventDefault();
   const pass = prompt("🔒 Entrez le mot de passe pour accéder aux statistiques :");
-  if (pass === "booster") { // 🔑 ton mot de passe ici
-    window.location.href = "stats.html";
-  } else if (pass !== null) {
-    alert("❌ Mot de passe incorrect !");
-  }
+  if(pass==="booster") window.location.href="stats.html";
+  else if(pass!==null) alert("❌ Mot de passe incorrect !");
 });
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
