@@ -14,6 +14,7 @@ body {
   background: #ffe4e1;
 }
 
+/* ================= NAVBAR ================= */
 #navbar {
   position: fixed;
   top: 0;
@@ -32,6 +33,7 @@ body {
   text-decoration: none;
 }
 
+/* ================= HEADER ================= */
 header {
   text-align: center;
   padding: 20px;
@@ -39,31 +41,39 @@ header {
   color: white;
 }
 
-header img {
-  max-width: 150px;
-  border-radius: 15px;
-}
-
 h1 {
   font-family: 'Press Start 2P';
   font-size: 1.4em;
 }
 
+/* ================= CONTROLS ================= */
+#controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px;
+}
+
+/* ================= CARDS ================= */
 #cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
   gap: 20px;
   max-width: 1200px;
-  margin: 20px auto;
+  margin: auto;
 }
 
 .card {
-  position: relative;
+  cursor: pointer;
   height: 300px;
   border-radius: 15px;
   overflow: hidden;
   border: 3px solid #ffb6c1;
-  background: #fff0f5;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
 }
 
 .card img {
@@ -72,21 +82,43 @@ h1 {
   object-fit: cover;
 }
 
-.card .info {
-  position: absolute;
+/* ================= MODAL ================= */
+#modal {
+  position: fixed;
   inset: 0;
-  background: rgba(255,228,225,0.95);
-  opacity: 0;
-  padding: 10px;
-  transition: .3s;
-  overflow-y: auto;
-  font-size: 0.85em;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
 }
 
-.card:hover .info {
-  opacity: 1;
+#modalContent {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+  animation: zoom 0.3s ease;
 }
 
+@keyframes zoom {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+#modalContent img {
+  width: 100%;
+  border-radius: 15px;
+}
+
+#close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* ================= BANDEAU ================= */
 #bandeau {
   position: fixed;
   top: 70px;
@@ -94,21 +126,9 @@ h1 {
   background: white;
   border: 2px solid #ff69b4;
   border-radius: 12px;
-  padding: 10px;
+  padding: 8px;
   display: none;
   z-index: 9999;
-}
-
-.sortie {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sortie img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
 }
 </style>
 </head>
@@ -121,116 +141,99 @@ h1 {
 </nav>
 
 <header>
-  <img src="https://i.postimg.cc/wvPSqDzq/logo.jpg">
   <h1>Ma Collection de Boosters</h1>
 </header>
 
-<div id="bandeau">
-  <div id="contenu-bandeau"></div>
-</div>
+<div id="bandeau"><div id="contenu-bandeau"></div></div>
 
 <div id="cards">Chargement…</div>
 
+<!-- ================= MODAL ================= -->
+<div id="modal" onclick="closeModal()">
+  <div id="modalContent" onclick="event.stopPropagation()">
+    <span id="close" onclick="closeModal()">❌</span>
+    <img id="modalImg">
+    <div id="modalInfo"></div>
+  </div>
+</div>
+
 <script>
-/* ================== URL GOOGLE SHEETS ================== */
 const sheetURL =
   "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
 const sheetDonneesURL =
   "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&sheet=DONNEES";
 
-/* ================== VARIABLES ================== */
 let allCards = [];
 let sorties = [];
 
-/* ================== FORMAT DATE FR ================== */
-function formatDateFR(value) {
-  if (!value) return "";
-  if (typeof value === "string") return value.trim();
-
-  const d = new Date(value);
-  if (isNaN(d)) return "";
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(d);
+/* ================= DATE FR ================= */
+function formatDateFR(v) {
+  if (!v) return "";
+  if (typeof v === "string") return v;
+  const d = new Date(v);
+  return isNaN(d) ? "" :
+    new Intl.DateTimeFormat("fr-FR", { day:"numeric", month:"long", year:"numeric" }).format(d);
 }
 
-/* ================== CHARGER SORTIES ================== */
-function chargerSorties() {
-  return fetch(sheetDonneesURL)
-    .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      sorties = json.table.rows
-        .map(r => ({
-          serie: r.c[0]?.v?.trim() || "",
-          date: formatDateFR(r.c[2]?.f || r.c[2]?.v || "")
-        }))
-        .filter(s => s.serie && s.date);
-    });
+/* ================= MODAL ================= */
+function openModal(card) {
+  modalImg.src = card.image;
+  modalInfo.innerHTML = `
+    <b>${card.nomSet}</b><br>
+    Série : ${card.serie}<br>
+    Booster : ${card.booster}<br>
+    Année : ${card.annee}<br>
+    Langue : ${card.langue}<br>
+    Type : ${card.type}
+  `;
+  modal.style.display = "flex";
 }
 
-/* ================== AFFICHER CARTES ================== */
+function closeModal() {
+  modal.style.display = "none";
+}
+
+/* ================= CARDS ================= */
 function renderCards() {
-  const container = document.getElementById("cards");
-
-  container.innerHTML = allCards.map(c => `
-    <div class="card">
-      <img src="${c.image || 'https://via.placeholder.com/400x600?text=Pas+d’image'}">
-      <div class="info">
-        <b>${c.nomSet}</b><br>
-        Série : ${c.serie}<br>
-        Booster : ${c.booster}<br>
-        Année : ${c.annee}<br>
-        Langue : ${c.langue}<br>
-        Type : ${c.type}
-      </div>
+  cards.innerHTML = allCards.map((c,i) => `
+    <div class="card" onclick="openModal(allCards[${i}])">
+      <img src="${c.image || 'https://via.placeholder.com/400x600'}">
     </div>
   `).join("");
 }
 
-/* ================== BANDEAU ================== */
-function afficherBandeauSheet() {
-  if (!sorties.length) return;
-
-  const cont = document.getElementById("contenu-bandeau");
-  cont.innerHTML = "";
-
-  sorties.forEach(s => {
-    const img = allCards.find(c => c.serie === s.serie)?.image || "";
-    cont.innerHTML += `
-      <div class="sortie">
-        <img src="${img}">
-        <strong>${s.serie}</strong> : ${s.date}
-      </div>`;
-  });
-
-  bandeau.style.display = "block";
-  setTimeout(() => bandeau.style.display = "none", 120000);
-}
-
-/* ================== CHARGEMENT GLOBAL ================== */
+/* ================= CHARGEMENT ================= */
 Promise.all([
-  fetch(sheetURL)
-    .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      allCards = json.table.rows.map(r => ({
+  fetch(sheetURL).then(r=>r.text()).then(t=>{
+    const j = JSON.parse(t.substr(47).slice(0,-2));
+    allCards = j.table.rows.map(r=>({
+      serie: r.c[0]?.v || "",
+      nomSet: r.c[1]?.v || "",
+      booster: r.c[2]?.v || "",
+      annee: r.c[3]?.v || "",
+      langue: r.c[5]?.v || "",
+      type: r.c[6]?.v || "",
+      image: r.c[9]?.v || ""
+    }));
+    renderCards();
+  }),
+  fetch(sheetDonneesURL).then(r=>r.text()).then(t=>{
+    const j = JSON.parse(t.substr(47).slice(0,-2));
+    sorties = j.table.rows
+      .map(r=>({
         serie: r.c[0]?.v || "",
-        nomSet: r.c[1]?.v || "",
-        booster: r.c[2]?.v || "",
-        annee: r.c[3]?.v || "",
-        langue: r.c[5]?.v || "",
-        type: r.c[6]?.v || "",
-        image: r.c[9]?.v || ""
-      }));
-      renderCards(); // ✅ IMPORTANT
-    }),
-  chargerSorties()
-]).then(afficherBandeauSheet);
+        date: formatDateFR(r.c[2]?.f || r.c[2]?.v || "")
+      }))
+      .filter(s=>s.serie && s.date);
+
+    contenu-bandeau.innerHTML = sorties.map(s =>
+      `<div><b>${s.serie}</b> : ${s.date}</div>`
+    ).join("");
+
+    bandeau.style.display = "block";
+  })
+]);
 </script>
 
 </body>
