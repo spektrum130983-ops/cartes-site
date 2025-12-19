@@ -10,7 +10,7 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 60px 0 0 0;
+  padding-top: 60px;
   background: #ffe4e1;
 }
 
@@ -19,10 +19,10 @@ body {
   top: 0;
   width: 100%;
   background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px;
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 10px;
   z-index: 10000;
 }
 
@@ -49,22 +49,6 @@ h1 {
   font-size: 1.4em;
 }
 
-#controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px;
-}
-
-#controls input,
-#controls select,
-#controls button {
-  padding: 8px;
-  border-radius: 10px;
-  border: 2px solid #ff69b4;
-}
-
 #cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
@@ -74,7 +58,6 @@ h1 {
 }
 
 .card {
-  position: relative;
   height: 300px;
   border-radius: 15px;
   overflow: hidden;
@@ -87,20 +70,6 @@ h1 {
   object-fit: cover;
 }
 
-.card .info {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,228,225,0.95);
-  opacity: 0;
-  padding: 10px;
-  transition: .3s;
-  overflow-y: auto;
-}
-
-.card:hover .info {
-  opacity: 1;
-}
-
 #bandeau {
   position: fixed;
   top: 70px;
@@ -108,19 +77,18 @@ h1 {
   background: white;
   border: 2px solid #ff69b4;
   border-radius: 12px;
-  padding: 8px;
+  padding: 10px;
   display: none;
-  gap: 10px;
   z-index: 9999;
 }
 
-#bandeau .sortie {
+.sortie {
   display: flex;
-  gap: 5px;
   align-items: center;
+  gap: 6px;
 }
 
-#bandeau img {
+.sortie img {
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -144,19 +112,10 @@ h1 {
   <div id="contenu-bandeau"></div>
 </div>
 
-<div id="controls">
-  <input id="search" placeholder="Recherche">
-  <select id="filterNomSet"><option value="">Tous les sets</option></select>
-  <select id="filterType"><option value="">Tous les types</option></select>
-  <select id="filterLangue"><option value="">Toutes langues</option></select>
-  <select id="filterAnnee"><option value="">Toutes années</option></select>
-  <button id="resetFilters">Reset</button>
-</div>
-
 <div id="cards">Chargement…</div>
 
 <script>
-/* ================== URL GOOGLE SHEETS ================== */
+/* ================== URL SHEETS ================== */
 const sheetURL =
   "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
@@ -167,11 +126,19 @@ const sheetDonneesURL =
 let allCards = [];
 let sorties = [];
 
-/* ================== DATE FR ================== */
+/* ================== FORMAT DATE FR ================== */
 function formatDateFR(value) {
   if (!value) return "";
+
+  // Si la date est déjà du texte (ex: "vendredi 7 novembre 2025")
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  // Si la date est une vraie date Sheets
   const d = new Date(value);
   if (isNaN(d)) return "";
+
   return new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "long",
@@ -182,67 +149,37 @@ function formatDateFR(value) {
 /* ================== CHARGER SORTIES ================== */
 function chargerSorties() {
   return fetch(sheetDonneesURL)
-    .then(r => r.text())
-    .then(t => {
-      const json = JSON.parse(t.substr(47).slice(0, -2));
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+
       sorties = json.table.rows
-        .map(r => ({
-          serie: r.c[0]?.v?.trim() || "",
-          nomSet: r.c[1]?.v?.trim() || "",
-          dateRaw: r.c[2]?.v || r.c[2]?.f || ""
-        }))
-        .filter(s => s.serie && s.dateRaw)
-        .map(s => ({
-          serie: s.serie,
-          nomSet: s.nomSet,
-          date: formatDateFR(s.dateRaw)
-        }));
+        .map(r => {
+          const serie = r.c[0]?.v?.trim() || "";
+          const dateValue = r.c[2]?.f || r.c[2]?.v || "";
+
+          return {
+            serie,
+            date: formatDateFR(dateValue)
+          };
+        })
+        // ❌ lignes vides supprimées
+        .filter(s => s.serie !== "" && s.date !== "");
     });
-}
-
-/* ================== CARDS ================== */
-function renderCards(cards = allCards) {
-  document.getElementById("cards").innerHTML = cards.map(c => `
-    <div class="card">
-      <img src="${c.image || 'https://via.placeholder.com/400x600'}">
-      <div class="info">
-        <b>${c.nomSet}</b><br>
-        Série : ${c.serie}<br>
-        Année : ${c.annee}<br>
-        Langue : ${c.langue}<br>
-        Type : ${c.type}
-      </div>
-    </div>
-  `).join("");
-}
-
-/* ================== FILTRES ================== */
-function fillFilter(id, values) {
-  const s = document.getElementById(id);
-  [...new Set(values.filter(v => v))].sort().forEach(v => {
-    s.innerHTML += `<option>${v}</option>`;
-  });
-}
-
-function applyFilters() {
-  const q = search.value.toLowerCase();
-  renderCards(allCards.filter(c =>
-    (!filterNomSet.value || c.nomSet === filterNomSet.value) &&
-    (!filterType.value || c.type === filterType.value) &&
-    (!filterLangue.value || c.langue === filterLangue.value) &&
-    (!filterAnnee.value || c.annee === filterAnnee.value) &&
-    Object.values(c).some(v => (v||"").toString().toLowerCase().includes(q))
-  ));
 }
 
 /* ================== BANDEAU ================== */
 function afficherBandeauSheet() {
   if (!sorties.length) return;
+
   const cont = document.getElementById("contenu-bandeau");
   cont.innerHTML = "";
 
   sorties.forEach(s => {
-    const img = allCards.find(c => c.serie === s.serie)?.image || "";
+    const img =
+      allCards.find(c => c.serie === s.serie)?.image ||
+      "https://via.placeholder.com/24";
+
     cont.innerHTML += `
       <div class="sortie">
         <img src="${img}">
@@ -250,42 +187,23 @@ function afficherBandeauSheet() {
       </div>`;
   });
 
-  bandeau.style.display = "flex";
+  bandeau.style.display = "block";
   setTimeout(() => bandeau.style.display = "none", 120000);
 }
 
 /* ================== CHARGEMENT GLOBAL ================== */
 Promise.all([
-  fetch(sheetURL).then(r => r.text()).then(t => {
-    const json = JSON.parse(t.substr(47).slice(0, -2));
-    allCards = json.table.rows.map(r => ({
-      serie: r.c[0]?.v || "",
-      nomSet: r.c[1]?.v || "",
-      booster: r.c[2]?.v || "",
-      annee: r.c[3]?.v || "",
-      langue: r.c[5]?.v || "",
-      type: r.c[6]?.v || "",
-      image: r.c[9]?.v || ""
-    }));
-
-    fillFilter("filterNomSet", allCards.map(c => c.nomSet));
-    fillFilter("filterType", allCards.map(c => c.type));
-    fillFilter("filterLangue", allCards.map(c => c.langue));
-    fillFilter("filterAnnee", allCards.map(c => c.annee));
-
-    renderCards();
-  }),
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      allCards = json.table.rows.map(r => ({
+        serie: r.c[0]?.v || "",
+        image: r.c[9]?.v || ""
+      }));
+    }),
   chargerSorties()
 ]).then(afficherBandeauSheet);
-
-/* ================== EVENTS ================== */
-["search","filterNomSet","filterType","filterLangue","filterAnnee"]
-  .forEach(id => document.getElementById(id).addEventListener("input", applyFilters));
-
-resetFilters.onclick = () => {
-  document.querySelectorAll("#controls input, #controls select").forEach(e => e.value="");
-  renderCards();
-};
 </script>
 
 </body>
