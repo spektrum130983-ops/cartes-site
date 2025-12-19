@@ -79,7 +79,6 @@ h1 {
   border-radius: 15px;
   overflow: hidden;
   border: 3px solid #ffb6c1;
-  cursor: pointer;
 }
 
 .card img {
@@ -168,17 +167,36 @@ const sheetDonneesURL =
 let allCards = [];
 let sorties = [];
 
-/* ================== CHARGEMENT DONNEES ================== */
+/* ================== DATE FR ================== */
+function formatDateFR(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d)) return "";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(d);
+}
+
+/* ================== CHARGER SORTIES ================== */
 function chargerSorties() {
   return fetch(sheetDonneesURL)
     .then(r => r.text())
     .then(t => {
       const json = JSON.parse(t.substr(47).slice(0, -2));
-      sorties = json.table.rows.map(r => ({
-        serie: r.c[0]?.v || "",
-        nomSet: r.c[1]?.v || "",
-        date: r.c[2]?.v || ""
-      }));
+      sorties = json.table.rows
+        .map(r => ({
+          serie: r.c[0]?.v?.trim() || "",
+          nomSet: r.c[1]?.v?.trim() || "",
+          dateRaw: r.c[2]?.v || r.c[2]?.f || ""
+        }))
+        .filter(s => s.serie && s.dateRaw)
+        .map(s => ({
+          serie: s.serie,
+          nomSet: s.nomSet,
+          date: formatDateFR(s.dateRaw)
+        }));
     });
 }
 
@@ -189,10 +207,10 @@ function renderCards(cards = allCards) {
       <img src="${c.image || 'https://via.placeholder.com/400x600'}">
       <div class="info">
         <b>${c.nomSet}</b><br>
-        Série: ${c.serie}<br>
-        Année: ${c.annee}<br>
-        Langue: ${c.langue}<br>
-        Type: ${c.type}
+        Série : ${c.serie}<br>
+        Année : ${c.annee}<br>
+        Langue : ${c.langue}<br>
+        Type : ${c.type}
       </div>
     </div>
   `).join("");
