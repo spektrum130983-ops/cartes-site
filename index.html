@@ -54,20 +54,37 @@ h1 {
   grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
   gap: 20px;
   max-width: 1200px;
-  margin: auto;
+  margin: 20px auto;
 }
 
 .card {
+  position: relative;
   height: 300px;
   border-radius: 15px;
   overflow: hidden;
   border: 3px solid #ffb6c1;
+  background: #fff0f5;
 }
 
 .card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.card .info {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,228,225,0.95);
+  opacity: 0;
+  padding: 10px;
+  transition: .3s;
+  overflow-y: auto;
+  font-size: 0.85em;
+}
+
+.card:hover .info {
+  opacity: 1;
 }
 
 #bandeau {
@@ -115,7 +132,7 @@ h1 {
 <div id="cards">Chargement…</div>
 
 <script>
-/* ================== URL SHEETS ================== */
+/* ================== URL GOOGLE SHEETS ================== */
 const sheetURL =
   "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
@@ -129,13 +146,8 @@ let sorties = [];
 /* ================== FORMAT DATE FR ================== */
 function formatDateFR(value) {
   if (!value) return "";
+  if (typeof value === "string") return value.trim();
 
-  // Si la date est déjà du texte (ex: "vendredi 7 novembre 2025")
-  if (typeof value === "string") {
-    return value.trim();
-  }
-
-  // Si la date est une vraie date Sheets
   const d = new Date(value);
   if (isNaN(d)) return "";
 
@@ -152,20 +164,32 @@ function chargerSorties() {
     .then(res => res.text())
     .then(text => {
       const json = JSON.parse(text.substr(47).slice(0, -2));
-
       sorties = json.table.rows
-        .map(r => {
-          const serie = r.c[0]?.v?.trim() || "";
-          const dateValue = r.c[2]?.f || r.c[2]?.v || "";
-
-          return {
-            serie,
-            date: formatDateFR(dateValue)
-          };
-        })
-        // ❌ lignes vides supprimées
-        .filter(s => s.serie !== "" && s.date !== "");
+        .map(r => ({
+          serie: r.c[0]?.v?.trim() || "",
+          date: formatDateFR(r.c[2]?.f || r.c[2]?.v || "")
+        }))
+        .filter(s => s.serie && s.date);
     });
+}
+
+/* ================== AFFICHER CARTES ================== */
+function renderCards() {
+  const container = document.getElementById("cards");
+
+  container.innerHTML = allCards.map(c => `
+    <div class="card">
+      <img src="${c.image || 'https://via.placeholder.com/400x600?text=Pas+d’image'}">
+      <div class="info">
+        <b>${c.nomSet}</b><br>
+        Série : ${c.serie}<br>
+        Booster : ${c.booster}<br>
+        Année : ${c.annee}<br>
+        Langue : ${c.langue}<br>
+        Type : ${c.type}
+      </div>
+    </div>
+  `).join("");
 }
 
 /* ================== BANDEAU ================== */
@@ -176,10 +200,7 @@ function afficherBandeauSheet() {
   cont.innerHTML = "";
 
   sorties.forEach(s => {
-    const img =
-      allCards.find(c => c.serie === s.serie)?.image ||
-      "https://via.placeholder.com/24";
-
+    const img = allCards.find(c => c.serie === s.serie)?.image || "";
     cont.innerHTML += `
       <div class="sortie">
         <img src="${img}">
@@ -199,8 +220,14 @@ Promise.all([
       const json = JSON.parse(text.substr(47).slice(0, -2));
       allCards = json.table.rows.map(r => ({
         serie: r.c[0]?.v || "",
+        nomSet: r.c[1]?.v || "",
+        booster: r.c[2]?.v || "",
+        annee: r.c[3]?.v || "",
+        langue: r.c[5]?.v || "",
+        type: r.c[6]?.v || "",
         image: r.c[9]?.v || ""
       }));
+      renderCards(); // ✅ IMPORTANT
     }),
   chargerSorties()
 ]).then(afficherBandeauSheet);
