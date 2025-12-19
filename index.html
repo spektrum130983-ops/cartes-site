@@ -3,33 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <title>Ma Collection de Boosters</title>
-
 <style>
+/* Polices */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
   margin: 0;
-  padding: 60px 0 0 0;
+  padding: 60px 0 0 0; /* éviter contenu sous navbar */
   background: #ffe4e1;
-}
-
-#navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background: linear-gradient(135deg, #f8cdda, #1d2b64);
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 10px;
-  z-index: 10000;
-}
-
-#navbar a {
-  color: white;
-  font-weight: bold;
-  text-decoration: none;
+  color: #333;
 }
 
 header {
@@ -37,16 +20,49 @@ header {
   padding: 20px;
   background: linear-gradient(135deg, #f8cdda, #1d2b64);
   color: white;
+  border-bottom: 4px solid #f8cdda;
 }
 
 header img {
   max-width: 150px;
+  border: 3px solid white;
   border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 h1 {
-  font-family: 'Press Start 2P';
-  font-size: 1.4em;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.5em;
+  margin: 10px 0 0 0;
+  text-shadow: 2px 2px #ffb6c1;
+}
+
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #f8cdda, #1d2b64);
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#navbar a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#navbar a:hover {
+  background: rgba(255,105,180,0.7);
+  transform: scale(1.05);
 }
 
 #controls {
@@ -54,81 +70,253 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin: 20px;
+  margin: 20px auto;
+  max-width: 1200px;
 }
 
-#controls input,
-#controls select,
-#controls button {
+#controls input, #controls select, #controls button {
   padding: 8px;
+  font-size: 0.9em;
+  border-radius: 10px;
+  border: 2px solid #ffb6c1;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+#controls input:focus, #controls select:focus {
+  border-color: #ff69b4;
+}
+
+#controls button {
+  background: #ff69b4;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#controls button:hover {
+  background: #ff1493;
+}
+
+#controls select.activeFilter, 
+#controls input.activeFilter {
+  border-color: #ff1493;
+  background: #fff0f5;
+  box-shadow: 0 0 8px rgba(255,105,180,0.5);
+}
+
+#seriesButtons {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#seriesButtons button {
+  margin: 2px;
+  padding: 5px 10px;
+  font-size: 0.8em;
   border-radius: 10px;
   border: 2px solid #ff69b4;
+  background: #fff0f5;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#seriesButtons button.active, #seriesButtons button:hover {
+  background: #ff69b4;
+  color: white;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+
+#counter {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1em;
 }
 
 #cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
+  margin: 0 auto 40px auto;
   max-width: 1200px;
-  margin: auto;
 }
 
 .card {
   position: relative;
+  width: 100%;
   height: 300px;
   border-radius: 15px;
   overflow: hidden;
-  border: 3px solid #ffb6c1;
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  border: 3px solid #ffb6c1;
+  background: #fff0f5;
+}
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transform: translateY(-5px);
 }
 
 .card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover img {
+  opacity: 0;
 }
 
 .card .info {
   position: absolute;
-  inset: 0;
-  background: rgba(255,228,225,0.95);
-  opacity: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   padding: 10px;
-  transition: .3s;
+  box-sizing: border-box;
+  background: rgba(255, 228, 225, 0.95);
+  opacity: 0;
   overflow-y: auto;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  font-size: 0.85em;
 }
 
 .card:hover .info {
   opacity: 1;
+  transform: translateY(0);
+}
+
+.card h3 {
+  margin: 0 0 5px;
+  font-size: 1em;
+  color: #ff1493;
+  text-shadow: 1px 1px #fff;
+}
+
+.card p {
+  margin: 2px 0;
+  color: #333;
+  line-height: 1.2em;
+}
+
+.card .info::-webkit-scrollbar {
+  width: 8px;
+}
+.card .info::-webkit-scrollbar-track {
+  background: #ffe4e1;
+  border-radius: 10px;
+}
+.card .info::-webkit-scrollbar-thumb {
+  background: #ff69b4;
+  border-radius: 10px;
+}
+
+#lightbox {
+  display: none;
+  position: fixed;
+  z-index: 10001; 
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#lightbox img {
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 15px;
+  box-shadow: 0 0 25px rgba(255,255,255,0.8);
+  animation: zoomIn 0.25s ease;
+}
+
+#closeLightbox {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  user-select: none;
+}
+
+#closeLightbox:hover {
+  color: #ff69b4;
+}
+
+#lightboxButtons {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#lightboxButtons button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: #ff69b4;
+  color: white;
+  font-size: 0.9em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#lightboxButtons button:hover {
+  background: #ff1493;
+  transform: scale(1.1);
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 #bandeau {
   position: fixed;
   top: 70px;
   left: 20px;
-  background: white;
+  background: rgba(255,255,255,0.95);
   border: 2px solid #ff69b4;
   border-radius: 12px;
-  padding: 8px;
-  display: none;
-  gap: 10px;
+  padding: 5px 10px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
   z-index: 9999;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-#bandeau .sortie {
+#bandeau div.sortie {
   display: flex;
-  gap: 5px;
   align-items: center;
+  gap: 5px;
 }
 
 #bandeau img {
   width: 24px;
   height: 24px;
   border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ccc;
 }
+
 </style>
 </head>
-
 <body>
 
 <nav id="navbar">
@@ -137,137 +325,278 @@ h1 {
 </nav>
 
 <header>
-  <img src="https://i.postimg.cc/wvPSqDzq/logo.jpg">
+  <img src="https://i.postimg.cc/wvPSqDzq/logo.jpg" alt="Logo Manga">
   <h1>Ma Collection de Boosters</h1>
 </header>
 
-<div id="bandeau">
+<div id="bandeau" style="display: none;">
   <div id="contenu-bandeau"></div>
 </div>
 
 <div id="controls">
-  <input id="search" placeholder="Recherche">
-  <select id="filterNomSet"><option value="">Tous les sets</option></select>
+  <input type="text" id="search" placeholder="Rechercher sur toutes les colonnes...">
+  <select id="filterNomSet"><option value="">Tous les Sets</option></select>
   <select id="filterType"><option value="">Tous les types</option></select>
-  <select id="filterLangue"><option value="">Toutes langues</option></select>
-  <select id="filterAnnee"><option value="">Toutes années</option></select>
-  <button id="resetFilters">Reset</button>
+  <select id="filterBooster"><option value="">Tous les boosters</option></select>
+  <select id="filterLangue"><option value="">Toutes les langues</option></select>
+  <select id="filterAnnee"><option value="">Toutes les années</option></select>
+  <button id="resetFilters">Réinitialiser</button>
 </div>
 
+<div id="seriesButtons"></div>
+<div id="counter"></div>
 <div id="cards">Chargement…</div>
 
+<!-- Lightbox -->
+<div id="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
+  <span id="closeLightbox" title="Fermer" role="button" aria-label="Fermer la vue agrandie">&times;</span>
+  <img id="lightboxImg" src="" alt="Image en grand">
+  <div id="lightboxButtons">
+    <button id="btnPrev">⬅ Précédent</button>
+    <button id="btnNext">➡ Suivant</button>
+    <button id="btnZoom">🔍 Agrandir</button>
+    <button id="btnPdf">📄 Ouvrir PDF</button>
+    <button id="btnImg">👁 Voir carte</button>
+  </div>
+</div>
+
 <script>
-/* ================== URL GOOGLE SHEETS ================== */
-const sheetURL =
-  "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
-
-const sheetDonneesURL =
-  "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&sheet=DONNEES";
-
-/* ================== VARIABLES ================== */
+const sheetURL = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 let allCards = [];
-let sorties = [];
+let currentCards = [];
+let currentIndex = 0;
+let activeSerie = null;
 
-/* ================== CHARGEMENT DONNEES ================== */
-function chargerSorties() {
-  return fetch(sheetDonneesURL)
-    .then(r => r.text())
-    .then(t => {
-      const json = JSON.parse(t.substr(47).slice(0, -2));
-      sorties = json.table.rows.map(r => ({
-        serie: r.c[0]?.v || "",
-        nomSet: r.c[1]?.v || "",
-        date: r.c[2]?.v || ""
-      }));
-    });
-}
-
-/* ================== CARDS ================== */
-function renderCards(cards = allCards) {
-  document.getElementById("cards").innerHTML = cards.map(c => `
-    <div class="card">
-      <img src="${c.image || 'https://via.placeholder.com/400x600'}">
-      <div class="info">
-        <b>${c.nomSet}</b><br>
-        Série: ${c.serie}<br>
-        Année: ${c.annee}<br>
-        Langue: ${c.langue}<br>
-        Type: ${c.type}
-      </div>
-    </div>
-  `).join("");
-}
-
-/* ================== FILTRES ================== */
-function fillFilter(id, values) {
-  const s = document.getElementById(id);
-  [...new Set(values.filter(v => v))].sort().forEach(v => {
-    s.innerHTML += `<option>${v}</option>`;
-  });
-}
-
-function applyFilters() {
-  const q = search.value.toLowerCase();
-  renderCards(allCards.filter(c =>
-    (!filterNomSet.value || c.nomSet === filterNomSet.value) &&
-    (!filterType.value || c.type === filterType.value) &&
-    (!filterLangue.value || c.langue === filterLangue.value) &&
-    (!filterAnnee.value || c.annee === filterAnnee.value) &&
-    Object.values(c).some(v => (v||"").toString().toLowerCase().includes(q))
-  ));
-}
-
-/* ================== BANDEAU ================== */
-function afficherBandeauSheet() {
-  if (!sorties.length) return;
-  const cont = document.getElementById("contenu-bandeau");
-  cont.innerHTML = "";
-
-  sorties.forEach(s => {
-    const img = allCards.find(c => c.serie === s.serie)?.image || "";
-    cont.innerHTML += `
-      <div class="sortie">
-        <img src="${img}">
-        <strong>${s.serie}</strong> : ${s.date}
-      </div>`;
-  });
-
-  bandeau.style.display = "flex";
-  setTimeout(() => bandeau.style.display = "none", 120000);
-}
-
-/* ================== CHARGEMENT GLOBAL ================== */
-Promise.all([
-  fetch(sheetURL).then(r => r.text()).then(t => {
-    const json = JSON.parse(t.substr(47).slice(0, -2));
-    allCards = json.table.rows.map(r => ({
-      serie: r.c[0]?.v || "",
-      nomSet: r.c[1]?.v || "",
-      booster: r.c[2]?.v || "",
-      annee: r.c[3]?.v || "",
-      langue: r.c[5]?.v || "",
-      type: r.c[6]?.v || "",
-      image: r.c[9]?.v || ""
+// === Charger les données depuis Sheets
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    allCards = json.table.rows.map(row => ({
+      serie: row.c[0]?.v || "",
+      nomSet: row.c[1]?.v || "",
+      booster: row.c[2]?.v || "",
+      annee: row.c[3]?.f ? new Date(row.c[3].f).getFullYear().toString() : (row.c[3]?.v ? row.c[3].v.toString() : ""),
+      date: row.c[4]?.f || "",
+      langue: row.c[5]?.v || "",
+      type: row.c[6]?.v || "",
+      nombre: row.c[7]?.f || "",
+      code: row.c[8]?.v || "",
+      image: row.c[9]?.v || "",
+      pdf: row.c[10]?.v || "",
+      imageOriginal: row.c[11]?.v || "",
+      prixAchat: row.c[12]?.v || "",
+      prixActuel: row.c[13]?.v || ""
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
     fillFilter("filterType", allCards.map(c => c.type));
+    fillFilter("filterBooster", allCards.map(c => c.booster));
     fillFilter("filterLangue", allCards.map(c => c.langue));
     fillFilter("filterAnnee", allCards.map(c => c.annee));
 
+    createSeriesButtons();
     renderCards();
-  }),
-  chargerSorties()
-]).then(afficherBandeauSheet);
+    afficherBandeauSheet();
+  })
+  .catch(err => {
+    console.error("Erreur de chargement:", err);
+    document.getElementById("cards").innerHTML = "Impossible de charger les données.<br>" + err;
+  });
 
-/* ================== EVENTS ================== */
-["search","filterNomSet","filterType","filterLangue","filterAnnee"]
-  .forEach(id => document.getElementById(id).addEventListener("input", applyFilters));
+// === Fonctions utilitaires
+function fillFilter(selectId, values) {
+  const select = document.getElementById(selectId);
+  let unique = [...new Set(values.filter(v => v))];
+  if (selectId === "filterAnnee") unique.sort((a,b)=>parseInt(a)-parseInt(b));
+  else unique.sort();
+  unique.forEach(v => {
+    const option = document.createElement("option");
+    option.value=v; option.textContent=v;
+    select.appendChild(option);
+  });
+}
 
-resetFilters.onclick = () => {
-  document.querySelectorAll("#controls input, #controls select").forEach(e => e.value="");
+function createSeriesButtons() {
+  const container = document.getElementById("seriesButtons");
+  container.innerHTML = "";
+  const series = [...new Set(allCards.map(c => c.serie).filter(s => s))].sort();
+  const allBtn = document.createElement("button");
+  allBtn.textContent = "Toutes";
+  allBtn.addEventListener("click", ()=> {
+    container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    allBtn.classList.add("active");
+    renderCards();
+  });
+  container.appendChild(allBtn);
+  series.forEach(s => {
+    const btn = document.createElement("button");
+    btn.textContent = s;
+    btn.addEventListener("click", ()=> {
+      container.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderCardsBySerie(s);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function getFilteredCards() {
+  const searchText = document.getElementById("search").value.toLowerCase();
+  const nomSetFilter = document.getElementById("filterNomSet").value;
+  const typeFilter = document.getElementById("filterType").value;
+  const boosterFilter = document.getElementById("filterBooster").value;
+  const langueFilter = document.getElementById("filterLangue").value;
+  const anneeFilter = document.getElementById("filterAnnee").value;
+
+  return allCards.filter(c => {
+    const fields=[c.nomSet,c.serie,c.booster,c.annee,c.date,c.langue,c.type,c.nombre,c.code,c.prixAchat,c.prixActuel];
+    const matchesSearch = fields.some(f => (f||"").toString().toLowerCase().includes(searchText));
+    return matchesSearch && (nomSetFilter?c.nomSet===nomSetFilter:true) &&
+           (typeFilter?c.type===typeFilter:true) &&
+           (boosterFilter?c.booster===boosterFilter:true) &&
+           (langueFilter?c.langue===langueFilter:true) &&
+           (anneeFilter?c.annee===anneeFilter:true);
+  });
+}
+
+function renderCards() {
+  activeSerie = null;
+  const filtered = getFilteredCards();
+  document.getElementById("counter").textContent = `Boosters : ${filtered.length} / ${allCards.length}`;
+  const container = document.getElementById("cards");
+  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
+}
+
+function renderCardsBySerie(serieName) {
+  activeSerie = serieName;
+  const filtered = allCards.filter(c => c.serie === serieName);
+  document.getElementById("counter").textContent = `Boosters dans "${serieName}" : ${filtered.length} / ${allCards.length}`;
+  const container = document.getElementById("cards");
+  container.innerHTML = filtered.length ? filtered.map((c,i)=>renderCardHTML(c,i)).join("") : "<p>Aucune carte trouvée.</p>";
+}
+
+function renderCardHTML(c,index){
+  const imgSrc = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+  return `<div class="card" data-index="${index}">
+    <img src="${imgSrc}" alt="${c.nomSet}" loading="lazy">
+    <div class="info">
+      <h3>${c.nomSet}</h3>
+      <p><b>Série :</b> ${c.serie}</p>
+      <p><b>Booster :</b> ${c.booster}</p>
+      <p><b>Année :</b> ${c.annee} | <b>Date :</b> ${c.date}</p>
+      <p><b>Langue :</b> ${c.langue} | <b>Type :</b> ${c.type}</p>
+      <p><b>Nombre :</b> ${c.nombre} | <b>Code :</b> ${c.code}</p>
+      <p><b>Prix d'achat :</b> ${c.prixAchat} | <b>Prix actuel :</b> ${c.prixActuel}</p>
+    </div>
+  </div>`;
+}
+
+// === Bandeau temporaire
+function afficherBandeauSheet(){
+  const bandeau = document.getElementById("bandeau");
+  const contenu = document.getElementById("contenu-bandeau");
+  contenu.innerHTML = "";
+
+  const sorties = [
+    { serie: "Star Wars", date: "vendredi 7 novembre 2025" },
+    { serie: "Lorcana", date: "vendredi 7 novembre 2025" },
+    { serie: "Pokemon", date: "vendredi 14 novembre 2025" },
+    { serie: "Magic", date: "vendredi 21 novembre 2025" }
+  ];
+
+  sorties.forEach(s => {
+    const card = allCards.find(c => c.serie.trim().toLowerCase() === s.serie.trim().toLowerCase());
+    const imgSrc = card && card.image ? card.image : "https://via.placeholder.com/24";
+    const div = document.createElement("div");
+    div.className = "sortie";
+    div.innerHTML = `<img src="${imgSrc}" alt="${s.serie}"> <strong>${s.serie}:</strong> ${s.date}`;
+    contenu.appendChild(div);
+  });
+
+  bandeau.style.display = "flex";
+  setTimeout(()=>{ bandeau.style.display = "none"; }, 120000); // 2 min
+}
+
+// === Lightbox
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const closeLightboxBtn = document.getElementById("closeLightbox");
+const btnPdf = document.getElementById("btnPdf");
+const btnImg = document.getElementById("btnImg");
+const btnPrev = document.getElementById("btnPrev");
+const btnNext = document.getElementById("btnNext");
+const btnZoom = document.getElementById("btnZoom");
+
+document.getElementById("cards").addEventListener("click", e=>{
+  const card = e.target.closest(".card");
+  if(!card) return;
+  const index = parseInt(card.dataset.index);
+  currentCards = activeSerie ? allCards.filter(c=>c.serie===activeSerie) : getFilteredCards();
+  currentIndex = index;
+  openLightbox();
+});
+
+function openLightbox(){
+  if(currentIndex<0 || currentIndex>=currentCards.length) return;
+  const c = currentCards[currentIndex];
+  lightboxImg.src = c.image || "https://via.placeholder.com/400x600?text=Pas+d'image";
+  lightboxImg.alt = c.nomSet;
+  btnPdf.style.display = c.pdf ? "inline-block":"none";
+  btnImg.style.display = c.imageOriginal ? "inline-block":"none";
+  if(c.pdf) btnPdf.onclick=()=>window.open(c.pdf,"_blank");
+  if(c.imageOriginal) btnImg.onclick=()=>{
+    const isOriginal = lightboxImg.dataset.mode==="original";
+    if(isOriginal){ lightboxImg.src = c.image; lightboxImg.dataset.mode="normal";}
+    else { lightboxImg.src = c.imageOriginal; lightboxImg.dataset.mode="original"; }
+  };
+  lightbox.style.display="flex";
+  document.body.classList.add("fullscreen-active");
+}
+
+function closeLightboxFn(){
+  lightbox.style.display="none";
+  document.body.classList.remove("fullscreen-active");
+  lightboxImg.src="";
+}
+
+closeLightboxBtn.addEventListener("click", closeLightboxFn);
+lightbox.addEventListener("click", e=>{ if(e.target===lightbox) closeLightboxFn(); });
+btnPrev.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex-1+currentCards.length)%currentCards.length; openLightbox();} });
+btnNext.addEventListener("click", ()=>{ if(currentCards.length){ currentIndex=(currentIndex+1)%currentCards.length; openLightbox();} });
+btnZoom.addEventListener("click", ()=>{ if(document.fullscreenElement) document.exitFullscreen(); else lightboxImg.requestFullscreen(); });
+window.addEventListener("keydown", e=>{
+  if(lightbox.style.display==="flex"){
+    if(e.key==="Escape") closeLightboxFn();
+    else if(e.key==="ArrowLeft") btnPrev.click();
+    else if(e.key==="ArrowRight") btnNext.click();
+  }
+});
+
+// === Filtre et reset
+["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", e=>{
+    e.target.classList.toggle("activeFilter", e.target.value!=="");
+    renderCards();
+  });
+});
+
+document.getElementById("resetFilters").addEventListener("click", ()=>{
+  ["search","filterNomSet","filterType","filterBooster","filterLangue","filterAnnee"].forEach(id=>{
+    document.getElementById(id).value="";
+    document.getElementById(id).classList.remove("activeFilter");
+  });
+  document.querySelectorAll("#seriesButtons button").forEach(b=>b.classList.remove("active"));
   renderCards();
-};
+});
+
+// === Mot de passe pour statistiques
+document.querySelector('a[href="stats.html"]').addEventListener('click', function(e){
+  e.preventDefault();
+  const pass = prompt("🔒 Entrez le mot de passe pour accéder aux statistiques :");
+  if(pass==="booster") window.location.href="stats.html";
+  else if(pass!==null) alert("❌ Mot de passe incorrect !");
+});
 </script>
 
 </body>
