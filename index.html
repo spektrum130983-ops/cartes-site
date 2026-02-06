@@ -494,22 +494,33 @@ function renderCardHTML(c,index){
   
 // === Récupération des sorties depuis l'onglet DONNEES
 function fetchSortiesData() {
-  const urlSorties = "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
+  const urlSorties =
+    "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
 
   return fetch(urlSorties)
     .then(res => res.text())
     .then(txt => {
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
-      // A2:C6 → colonne A = série / colonne C = date
       return json.table.rows
-        .filter(r => r.c[0] && r.c[2]) // sécurité
-        .map(r => ({
-          serie: r.c[0].v,
-          dateRaw: new Date(r.c[2].v)
-        }));
+        // 🔒 Garde uniquement les lignes avec série + date
+        .filter(r => r.c && r.c[0]?.v && r.c[2]?.v)
+        .slice(0, 4) // 🔒 A2 → C6 = 4 lignes max
+        .map(r => {
+          // Parse Date(YYYY,MM,DD)
+          const match = r.c[2].v.match(/Date\((\d+),(\d+),(\d+)\)/);
+          const date = match
+            ? new Date(match[1], match[2], match[3])
+            : null;
+
+          return {
+            serie: r.c[0].v,
+            dateRaw: date
+          };
+        });
     });
 }
+
 
 // === Format date en français (jour mois année)
 function formatDateFR(date) {
@@ -643,4 +654,5 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
