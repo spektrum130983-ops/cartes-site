@@ -503,20 +503,28 @@ function fetchSortiesData() {
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
       return json.table.rows
-        // ✅ garde uniquement les lignes avec Série + Date affichable
-        .filter(r =>
-          r.c &&
-          r.c[0] && r.c[0].v &&
-          r.c[2] && r.c[2].f
-        )
-        // ✅ limite à A2:C6 (max 4 lignes)
-        .slice(0, 4)
-        .map(r => ({
-          serie: r.c[0].v.trim(),
-          dateTexte: r.c[2].f
-        }));
+        .slice(1, 5) // A2 → C6 = lignes 2 à 5
+        .filter(r => r.c && r.c[0]?.v && r.c[2]?.v)
+        .map(r => {
+          let dateAffichee = "";
+
+          // Cas 1 : vraie date Google Sheets
+          if (r.c[2].f) {
+            dateAffichee = r.c[2].f;
+          }
+          // Cas 2 : texte simple
+          else {
+            dateAffichee = r.c[2].v;
+          }
+
+          return {
+            serie: r.c[0].v,
+            dateTexte: dateAffichee
+          };
+        });
     });
 }
+
 
 
 
@@ -656,6 +664,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
