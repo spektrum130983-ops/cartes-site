@@ -503,33 +503,17 @@ function fetchSortiesData() {
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
       return json.table.rows
-        .filter(r => r.c && r.c[0]?.v && r.c[2]) // série + date
-        .slice(0, 4) // A2 → C6 = 4 lignes
-        .map(r => {
-          let date = null;
-
-          // ✅ cas standard Google Sheets
-          if (r.c[2].f) {
-            date = new Date(r.c[2].f);
-          }
-          // ✅ cas Date(YYYY,MM,DD)
-          else if (typeof r.c[2].v === "string") {
-            const m = r.c[2].v.match(/Date\((\d+),(\d+),(\d+)\)/);
-            if (m) date = new Date(m[1], m[2], m[3]);
-          }
-          // ✅ cas timestamp
-          else if (typeof r.c[2].v === "number") {
-            date = new Date(r.c[2].v);
-          }
-
-          return {
-            serie: r.c[0].v,
-            dateRaw: date
-          };
-        })
-        .filter(s => s.dateRaw instanceof Date && !isNaN(s.dateRaw));
+        // 🔒 lignes A2 → C6 uniquement (4 lignes)
+        .slice(1, 5)
+        // 🔒 uniquement lignes valides
+        .filter(r => r.c && r.c[0]?.v && r.c[2]?.f)
+        .map(r => ({
+          serie: r.c[0].v,
+          dateTexte: r.c[2].f // 👈 déjà formatée en français
+        }));
     });
 }
+
 
 
 
@@ -550,9 +534,6 @@ function afficherBandeauSheet() {
     const contenu = document.getElementById("contenu-bandeau");
     contenu.innerHTML = "";
 
-    // Trier par date croissante
-    sorties.sort((a, b) => a.dateRaw - b.dateRaw);
-
     sorties.forEach(s => {
       const card = allCards.find(
         c => c.serie.toLowerCase().trim() === s.serie.toLowerCase().trim()
@@ -564,23 +545,21 @@ function afficherBandeauSheet() {
       div.className = "sortie";
       div.innerHTML = `
         <img src="${imgSrc}" alt="${s.serie}">
-        <strong>${s.serie} :</strong> ${formatDateFR(s.dateRaw)}
+        <strong>${s.serie} :</strong> ${s.dateTexte}
       `;
       contenu.appendChild(div);
     });
 
-    bandeau.style.display = "flex";
+    bandeau.style.display = sorties.length ? "flex" : "none";
 
-    // Masquer après 2 minutes
     setTimeout(() => {
       bandeau.style.display = "none";
     }, 120000);
-
-  }).catch(err => {
-    console.error("Erreur bandeau sorties :", err);
   });
 }
 
+
+  
 
 // === Lightbox
 const lightbox = document.getElementById("lightbox");
@@ -665,6 +644,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
