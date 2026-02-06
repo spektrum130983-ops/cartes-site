@@ -503,16 +503,21 @@ function fetchSortiesData() {
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
       return json.table.rows
-        // 🔒 lignes A2 → C6 uniquement (4 lignes)
-        .slice(1, 5)
-        // 🔒 uniquement lignes valides
-        .filter(r => r.c && r.c[0]?.v && r.c[2]?.f)
+        // ✅ garde uniquement les lignes avec Série + Date affichable
+        .filter(r =>
+          r.c &&
+          r.c[0] && r.c[0].v &&
+          r.c[2] && r.c[2].f
+        )
+        // ✅ limite à A2:C6 (max 4 lignes)
+        .slice(0, 4)
         .map(r => ({
-          serie: r.c[0].v,
-          dateTexte: r.c[2].f // 👈 déjà formatée en français
+          serie: r.c[0].v.trim(),
+          dateTexte: r.c[2].f
         }));
     });
 }
+
 
 
 
@@ -530,13 +535,18 @@ function formatDateFR(date) {
 
 function afficherBandeauSheet() {
   fetchSortiesData().then(sorties => {
+    if (!sorties.length) {
+      console.warn("Bandeau : aucune sortie trouvée");
+      return;
+    }
+
     const bandeau = document.getElementById("bandeau");
     const contenu = document.getElementById("contenu-bandeau");
     contenu.innerHTML = "";
 
     sorties.forEach(s => {
       const card = allCards.find(
-        c => c.serie.toLowerCase().trim() === s.serie.toLowerCase().trim()
+        c => c.serie.toLowerCase().trim() === s.serie.toLowerCase()
       );
 
       const imgSrc = card?.image || "https://via.placeholder.com/24";
@@ -550,13 +560,15 @@ function afficherBandeauSheet() {
       contenu.appendChild(div);
     });
 
-    bandeau.style.display = sorties.length ? "flex" : "none";
+    bandeau.style.display = "flex";
 
     setTimeout(() => {
       bandeau.style.display = "none";
     }, 120000);
-  });
+  })
+  .catch(err => console.error("Erreur bandeau :", err));
 }
+
 
 
   
@@ -644,6 +656,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
