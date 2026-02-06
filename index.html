@@ -494,8 +494,8 @@ function renderCardHTML(c,index){
   
 // === Récupération des sorties depuis l'onglet DONNEES
 function fetchSortiesData() {
-const urlSorties =
-"https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=1162487477";
+  const urlSorties =
+    "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=1162487477";
 
   return fetch(urlSorties)
     .then(res => res.text())
@@ -503,27 +503,15 @@ const urlSorties =
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
       return json.table.rows
-        .slice(1, 5) // A2 → C6 = lignes 2 à 5
+        // 🔒 on ignore uniquement les lignes vides
         .filter(r => r.c && r.c[0]?.v && r.c[2]?.v)
-        .map(r => {
-          let dateAffichee = "";
-
-          // Cas 1 : vraie date Google Sheets
-          if (r.c[2].f) {
-            dateAffichee = r.c[2].f;
-          }
-          // Cas 2 : texte simple
-          else {
-            dateAffichee = r.c[2].v;
-          }
-
-          return {
-            serie: r.c[0].v,
-            dateTexte: dateAffichee
-          };
-        });
+        .map(r => ({
+          serie: r.c[0].v.trim(),
+          dateTexte: r.c[2].f || r.c[2].v
+        }));
     });
 }
+
 
 
 
@@ -664,6 +652,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
