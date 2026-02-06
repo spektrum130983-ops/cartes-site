@@ -314,6 +314,18 @@ h1 {
   object-fit: cover;
   border: 1px solid #ccc;
 }
+#bandeau-total {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background: rgba(255,255,255,0.95);
+  border: 2px solid #1d2b64;
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 9999;
+}
 
 </style>
 </head>
@@ -331,6 +343,10 @@ h1 {
 
 <div id="bandeau" style="display: none;">
   <div id="contenu-bandeau"></div>
+</div>
+<div id="bandeau-total" style="display:none;">
+  <strong>🃏 Total cartes :</strong>
+  <span id="total-cartes"></span>
 </div>
 
 <div id="controls">
@@ -386,7 +402,9 @@ fetch(sheetURL)
       pdf: row.c[10]?.v || "",
       imageOriginal: row.c[11]?.v || "",
       prixAchat: row.c[12]?.v || "",
-      prixActuel: row.c[13]?.v || ""
+      prixActuel: row.c[13]?.v || "",
+      quantiteCartes: row.c[14]?.v || ""
+
     }));
 
     fillFilter("filterNomSet", allCards.map(c => c.nomSet));
@@ -398,6 +416,8 @@ fetch(sheetURL)
     createSeriesButtons();
     renderCards();
     afficherBandeauSheet();
+    afficherBandeauTotalCartes();
+
   })
   .catch(err => {
     console.error("Erreur de chargement:", err);
@@ -565,6 +585,22 @@ function afficherBandeauSheet() {
   .catch(err => console.error("Erreur bandeau :", err));
 }
 
+function afficherBandeauTotalCartes() {
+  let total = 0;
+
+  allCards.forEach(c => {
+    let q = parseInt(c.quantiteCartes, 10);
+    if (isNaN(q)) q = 5; // valeur par défaut
+    total += q;
+  });
+
+  document.getElementById("total-cartes").textContent = total;
+  document.getElementById("bandeau-total").style.display = "block";
+
+  setTimeout(() => {
+    document.getElementById("bandeau-total").style.display = "none";
+  }, 120000);
+}
 
 
   
@@ -652,6 +688,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
