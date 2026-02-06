@@ -494,8 +494,8 @@ function renderCardHTML(c,index){
   
 // === Récupération des sorties depuis l'onglet DONNEES
 function fetchSortiesData() {
-  const urlSorties =
-    "https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=658465532";
+const urlSorties =
+"https://docs.google.com/spreadsheets/d/1Qu3UDfkrM2r4XgsyWBxZBlgQtaTw8TOy7CHlI--kSbU/gviz/tq?tqx=out:json&gid=1162487477";
 
   return fetch(urlSorties)
     .then(res => res.text())
@@ -664,6 +664,7 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
 
