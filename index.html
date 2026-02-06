@@ -503,23 +503,34 @@ function fetchSortiesData() {
       const json = JSON.parse(txt.substr(47).slice(0, -2));
 
       return json.table.rows
-        // 🔒 Garde uniquement les lignes avec série + date
-        .filter(r => r.c && r.c[0]?.v && r.c[2]?.v)
-        .slice(0, 4) // 🔒 A2 → C6 = 4 lignes max
+        .filter(r => r.c && r.c[0]?.v && r.c[2]) // série + date
+        .slice(0, 4) // A2 → C6 = 4 lignes
         .map(r => {
-          // Parse Date(YYYY,MM,DD)
-          const match = r.c[2].v.match(/Date\((\d+),(\d+),(\d+)\)/);
-          const date = match
-            ? new Date(match[1], match[2], match[3])
-            : null;
+          let date = null;
+
+          // ✅ cas standard Google Sheets
+          if (r.c[2].f) {
+            date = new Date(r.c[2].f);
+          }
+          // ✅ cas Date(YYYY,MM,DD)
+          else if (typeof r.c[2].v === "string") {
+            const m = r.c[2].v.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (m) date = new Date(m[1], m[2], m[3]);
+          }
+          // ✅ cas timestamp
+          else if (typeof r.c[2].v === "number") {
+            date = new Date(r.c[2].v);
+          }
 
           return {
             serie: r.c[0].v,
             dateRaw: date
           };
-        });
+        })
+        .filter(s => s.dateRaw instanceof Date && !isNaN(s.dateRaw));
     });
 }
+
 
 
 // === Format date en français (jour mois année)
@@ -654,5 +665,6 @@ document.querySelector('a[href="stats.html"]').addEventListener('click', functio
 
 </body>
 </html>
+
 
 
